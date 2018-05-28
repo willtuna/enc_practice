@@ -142,7 +142,7 @@ def poly_ring_mult_over_q_with_irr(poly1_l,poly2_l,irr_l,q):
             result[idx] = val
     return result
 
-# e(x) = p*r(x)*h(x) + m(x) (mod q)
+# e(x) = p*r(x)*h(x) + m(x) (mod q)scalmul
 print("encryption ...")
 r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
 cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)

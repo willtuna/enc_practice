@@ -20,10 +20,10 @@ typedef struct {
     int degree;
 }Poly;
 
-void Poly_init(Poly* ptr,int coef[], int deg ){
-       ptr->degree = deg;
-       ptr->coef = malloc(deg*sizeof(int));
-       for(int idx=0;idx < deg ; ++idx){
+void Poly_init(Poly* ptr,int coef[], int size ){
+       ptr->degree = size - 1;
+       ptr->coef = malloc(size*sizeof(int));
+       for(int idx=0;idx < size ; ++idx){
            ptr->coef[idx] = coef[idx];
        }
 }
@@ -34,35 +34,48 @@ void Poly_free(Poly* ptr){
     }
 }
 void Poly_print(Poly* ptr){
-    printf("Poly Coef:\n");
+    printf("Poly Coef:   ");
     printf("{");
-    for(int idx=0; idx < ptr->degree ; ++idx){
-        if(idx != ptr->degree -1){
+    for(int idx=0; idx <= ptr->degree ; ++idx){
+        if(idx != ptr->degree ){
             printf("%d ,",ptr->coef[idx]);
         }
         else{
-            printf("%d },",ptr->coef[idx]);
+            printf("%d }\n,",ptr->coef[idx]);
         }
     }
 }
 void Poly_scalar_mult(Poly *rtn,Poly *ptr, int multiplier){
-    for(int idx=0;idx < ptr->degree ; ++idx){
+    for(int idx=0;idx <= ptr->degree ; ++idx){
         rtn->coef[idx]= (multiplier * ptr->coef[idx])%N;
     }
 }
 
-void Poly_add(Poly *rtn,Poly *ptr_a, Poly *ptr_b){
-    for(int idx =0 ; idx < ptr_a->degree ; ++idx)
+void Poly_add(Poly *rtn,Poly *ptr_a, Poly *ptr_b, int N){
+    for(int idx =0 ; idx <= ptr_a->degree ; ++idx)
         rtn->coef[idx] = (ptr_a->coef[idx]+ptr_b->coef[idx]) %N;
 }
 
-void Poly_mult(Poly * poly_rtn , Poly *ptr_a, Poly * ptr_b, Poly * ptr_irr){
+void Poly_mult(Poly * poly_rtn , Poly *ptr_a, Poly * ptr_b, Poly* irr_l,int q){
     int rtn_idx = 0;
+    int N = irr_l-> degree;
+#ifdef DBG
+    printf("poly rnt:"); Poly_print(poly_rtn);
+    printf("ptr_a");     Poly_print(ptr_a);
+    printf("ptr_b");     Poly_print(ptr_b);
+    printf("ptr_irr");   Poly_print(ptr_irr);
+#endif
 
-    for (int idx = 0 ; idx < ptr_a -> degree ; ++idx){
-        for(int idy = 0 ; idy < ptr_b -> degree ; ++ idy){
+    for (int idx = 0 ; idx <= ptr_a -> degree ; ++idx){
+        for(int idy = 0 ; idy <= ptr_b -> degree ; ++ idy){
             rtn_idx = (idx + idy)%N;
-            poly_rtn->coef[rtn_idx] = (poly_rtn->coef[rtn_idx] + ptr_a->coef[idx] * ptr_b->coef[idx])%N;
+#ifdef DBG
+            printf("\n(%d + %d * %d )mod N ",  poly_rtn -> coef[rtn_idx], ptr_a -> coef[idx], ptr_b->coef[idy]);
+#endif
+            poly_rtn->coef[rtn_idx] = (poly_rtn->coef[rtn_idx] + ptr_a->coef[idx] * ptr_b->coef[idy])%q;
+#ifdef DBG
+            printf("poly_rtn[%d] = %d \n", rtn_idx, poly_rtn -> coef[rtn_idx]);
+#endif
         }
     }
 }
@@ -112,12 +125,13 @@ int main(int argc , char** argv){
 
     Poly_scalar_mult(&poly_scalmul,&poly_rand_sel, p);
     Poly_print(&poly_scalmul);
+    Poly_print(&poly_key_pub);
 
-    Poly_mult( &poly_mult, &poly_scalmul, &poly_key_pub, &poly_irr_l);
+    Poly_mult( &poly_mult, &poly_scalmul, &poly_key_pub, & poly_irr_l,q);
     Poly_print(&poly_mult);
 
-    printf("DEBUG poly_mult\n");
-    Poly_add ( &poly_cipher , &poly_mult, &poly_message);
+    Poly_add ( &poly_cipher , &poly_mult, &poly_message, q);
+    printf("Cipher:  ");
     Poly_print(&poly_cipher);
 
 
