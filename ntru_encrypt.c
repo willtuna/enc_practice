@@ -20,6 +20,77 @@ typedef struct {
     int degree;
 }Poly;
 
+void Poly_init(Poly* ptr,int coef[], int deg );
+void Poly_free(Poly* ptr);
+void Poly_print(Poly* ptr);
+void Poly_scalar_mult(Poly *rtn,Poly *ptr, int multiplier);
+void Poly_add(Poly *rtn,Poly *ptr_a, Poly *ptr_b, int field_N);
+void Poly_mult(Poly * poly_rtn , Poly *ptr_a, Poly * ptr_b, Poly* ptr_irr,int q);
+
+
+
+/* ref 
+print("encryption ...")
+r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
+cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)
+print('cipher:',cipher)
+*/
+
+
+int main(int argc , char** argv){
+    Poly poly_g;
+    Poly poly_f      ; 
+    Poly poly_f_inv_q; 
+    Poly poly_f_inv_p; 
+    Poly poly_key_pub; 
+    Poly poly_message; 
+    Poly poly_rand_sel;
+    Poly poly_irr_l  ; 
+
+    Poly poly_scalmul; 
+    Poly poly_mult   ;
+    Poly poly_cipher ;
+    Poly_init(&poly_scalmul, NULL , 6);   
+    Poly_init(&poly_mult, NULL , 6);   
+    Poly_init(&poly_cipher, NULL , 6);   
+
+    int n = sizeof(rand_sel)/sizeof(rand_sel[0]);
+    Poly_init(&poly_rand_sel, rand_sel, n-1);
+
+    n = sizeof(key_pub)/sizeof(key_pub[0]);
+    Poly_init(&poly_key_pub,  key_pub , n-1);
+
+    n = sizeof(irr_l)/sizeof(irr_l[0]);
+    Poly_init(&poly_irr_l,  irr_l , n-1);
+
+    n = sizeof(message)/sizeof(message[0]);
+    Poly_init(&poly_message ,  message, n-1);
+    printf("message:  ");
+    Poly_print(&poly_message);
+
+    Poly_scalar_mult(&poly_scalmul,&poly_rand_sel, p);
+    Poly_mult( &poly_mult, &poly_scalmul, &poly_key_pub, & poly_irr_l,q);
+
+    printf("mult:  ");
+    Poly_print(&poly_mult);
+
+    Poly_add ( &poly_cipher , &poly_mult, &poly_message, q);
+    printf("Cipher:  ");
+    Poly_print(&poly_cipher);
+
+
+    Poly_free(&poly_rand_sel);
+    Poly_free(&poly_cipher);
+    Poly_free(&poly_key_pub);
+    Poly_free(&poly_irr_l);
+
+    Poly_free(&poly_scalmul);
+    Poly_free(&poly_mult);
+    return 0;
+}
+
+
+
 void Poly_init(Poly* ptr,int coef[], int deg ){
        ptr->degree = deg;
        ptr->coef = malloc( (deg+1) *sizeof(int));
@@ -66,7 +137,6 @@ void Poly_add(Poly *rtn,Poly *ptr_a, Poly *ptr_b, int field_N){
             rtn -> coef[idx] = (large_ptr->coef[idx]+ small_ptr->coef[idx]) % field_N;
     }
 }
-
 void Poly_mult(Poly * poly_rtn , Poly *ptr_a, Poly * ptr_b, Poly* ptr_irr,int q){
     int rtn_idx = 0;
     int N = ptr_irr -> degree;
@@ -94,66 +164,4 @@ void Poly_mult(Poly * poly_rtn , Poly *ptr_a, Poly * ptr_b, Poly* ptr_irr,int q)
 #endif
         }
     }
-}
-
-
-/* ref 
-print("encryption ...")
-r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
-cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)
-print('cipher:',cipher)
-*/
-
-
-int main(int argc , char** argv){
-    Poly poly_g;
-    Poly poly_f      ; 
-    Poly poly_f_inv_q; 
-    Poly poly_f_inv_p; 
-    Poly poly_key_pub; 
-    Poly poly_message; 
-    Poly poly_rand_sel;
-    Poly poly_irr_l  ; 
-
-    Poly poly_scalmul; 
-    Poly poly_mult   ;
-    Poly poly_cipher ;
-    Poly_init(&poly_scalmul, NULL , 6);   
-    Poly_init(&poly_mult, NULL , 6);   
-    Poly_init(&poly_cipher, NULL , 6);   
-
-
-    int n = sizeof(rand_sel)/sizeof(rand_sel[0]);
-    Poly_init(&poly_rand_sel, rand_sel, n-1);
-
-    n = sizeof(key_pub)/sizeof(key_pub[0]);
-    Poly_init(&poly_key_pub,  key_pub , n-1);
-
-    n = sizeof(irr_l)/sizeof(irr_l[0]);
-    Poly_init(&poly_irr_l,  irr_l , n-1);
-
-    n = sizeof(message)/sizeof(message[0]);
-    Poly_init(&poly_message ,  message, n-1);
-    printf("message:  ");
-    Poly_print(&poly_message);
-
-    Poly_scalar_mult(&poly_scalmul,&poly_rand_sel, p);
-    Poly_mult( &poly_mult, &poly_scalmul, &poly_key_pub, & poly_irr_l,q);
-
-    printf("mult:  ");
-    Poly_print(&poly_mult);
-
-    Poly_add ( &poly_cipher , &poly_mult, &poly_message, q);
-    printf("Cipher:  ");
-    Poly_print(&poly_cipher);
-
-
-    Poly_free(&poly_rand_sel);
-    Poly_free(&poly_cipher);
-    Poly_free(&poly_key_pub);
-    Poly_free(&poly_irr_l);
-
-    Poly_free(&poly_scalmul);
-    Poly_free(&poly_mult);
-    return 0;
 }
