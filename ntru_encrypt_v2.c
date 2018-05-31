@@ -15,28 +15,36 @@ int message  []=  {1 ,-1, 1, 1, 0,-1   };
 int rand_sel []=  {-1, 1, 0, 0, 0,-1, 1};
 int irr_l    []=  {-1, 0, 0, 0, 0, 0, 0, 1};
 
-typedef Poly* (*func_p)(Poly *);
-typedef Poly* (*func_p_i)(Poly *. Poly*, int);
+typedef struct Poly Poly;// forward declaration
+
+typedef void  (*func_p)(Poly *);
+typedef void  (*func_p_arr_i)(Poly *,int [], int);
+typedef Poly* (*func_p_i)(Poly*, int);
 typedef Poly* (*func_p_p_i)(Poly *, Poly *, int);
 typedef Poly* (*func_p_p_p_i)(Poly *, Poly *, Poly *,int);
 
-typedef struct {
+struct Poly {
     int * coef;
     int degree;
     func_p free,print;
     func_p_i scalar_mult;
     func_p_p_i add;
     func_p_p_p_i mult;
-}Poly;
+    func_p_arr_i set;
+};
 
 
-void Poly_init(Poly** pt2pt);
+int table_size = 30;
+int  poly_count = 0;
+
+int  Poly_init(Poly** pt2pt);
 
 void Poly_free(Poly* ptr);
 void Poly_print(Poly* self);
 Poly * Poly_scalar_mult(Poly * self, int multiplier);
 Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
 Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
+void Poly_set(Poly *self, int [], int degree); 
 
 
 
@@ -46,57 +54,60 @@ r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
 cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)
 print('cipher:',cipher)
 */
-
+Poly ** poly_table = NULL;
 
 int main(int argc , char** argv){
-    Poly poly_g;
-    Poly poly_f      ; 
-    Poly poly_f_inv_q; 
-    Poly poly_f_inv_p; 
-    Poly poly_key_pub; 
-    Poly poly_message; 
-    Poly poly_rand_sel;
-    Poly poly_irr_l  ; 
+    poly_table = malloc(sizeof(Poly*) * table_size);
+    Poly * poly_g;
+    Poly * poly_f      ; 
+    Poly * poly_f_inv_q; 
+    Poly * poly_f_inv_p; 
+    Poly * poly_key_pub; 
+    Poly * poly_message; 
+    Poly * poly_rand_sel;
+    Poly * poly_irr_l  ; 
 
-    Poly poly_scalmul; 
-    Poly poly_mult   ;
-    Poly poly_cipher ;
-    Poly_init(&poly_scalmul, NULL , 6);   
-    Poly_init(&poly_mult, NULL , 6);   
-    Poly_init(&poly_cipher, NULL , 6);   
+    Poly_init(& poly_g       );
+    Poly_init(& poly_f       );
+    Poly_init(& poly_f_inv_q );
+    Poly_init(& poly_f_inv_p );
+    Poly_init(& poly_key_pub );
+    Poly_init(& poly_message );
+    Poly_init(& poly_rand_sel);
+    Poly_init(& poly_irr_l   );
 
-    int n = sizeof(rand_sel)/sizeof(rand_sel[0]);
-    Poly_init(&poly_rand_sel, rand_sel, n-1);
+    poly_g          -> set (poly_g        ,g        ,sizeof(g        )/sizeof(int) - 1 );
+    poly_f          -> set (poly_f        ,f        ,sizeof(f        )/sizeof(int) - 1 );
+    poly_f_inv_q    -> set (poly_f_inv_q  ,f_inv_q  ,sizeof(f_inv_q  )/sizeof(int) - 1 );
+    poly_f_inv_p    -> set (poly_f_inv_p  ,f_inv_p  ,sizeof(f_inv_p  )/sizeof(int) - 1 );
+    poly_key_pub    -> set (poly_key_pub  ,key_pub  ,sizeof(key_pub  )/sizeof(int) - 1 );
+    poly_message    -> set (poly_message  ,message  ,sizeof(message  )/sizeof(int) - 1 );
+    poly_rand_sel   -> set (poly_rand_sel ,rand_sel ,sizeof(rand_sel )/sizeof(int) - 1 );
+    poly_irr_l      -> set (poly_irr_l    ,irr_l    ,sizeof(irr_l    )/sizeof(int) - 1 );
 
-    n = sizeof(key_pub)/sizeof(key_pub[0]);
-    Poly_init(&poly_key_pub,  key_pub , n-1);
 
-    n = sizeof(irr_l)/sizeof(irr_l[0]);
-    Poly_init(&poly_irr_l,  irr_l , n-1);
 
-    n = sizeof(message)/sizeof(message[0]);
-    Poly_init(&poly_message ,  message, n-1);
+
     printf("message:  ");
-    Poly_print(&poly_message);
+    poly_message -> print(poly_message);
 
-    Poly_scalar_mult(&poly_scalmul,&poly_rand_sel, p);
-    Poly_mult( &poly_mult, &poly_scalmul, &poly_key_pub, & poly_irr_l,q);
+    Poly* poly_scalmul = poly_rand_sel -> scalar_mult(poly_rand_sel, p) ;
+
+    Poly* poly_mult    = poly_scalmul  -> mult(poly_scalmul, poly_key_pub, poly_irr_l, q);
 
     printf("mult:  ");
-    Poly_print(&poly_mult);
+    poly_mult -> print(poly_mult);
 
-    Poly_add ( &poly_cipher , &poly_mult, &poly_message, q);
+    Poly* poly_cipher = poly_mult -> add ( poly_mult, poly_message, q);
     printf("Cipher:  ");
-    Poly_print(&poly_cipher);
+    poly_cipher -> print(poly_cipher);
 
+    while(poly_count){
+        int idx = --poly_count;
+	poly_table[idx] -> free(poly_table[idx]);
+        poly_table[idx] = NULL;
+    }
 
-    Poly_free(&poly_rand_sel);
-    Poly_free(&poly_cipher);
-    Poly_free(&poly_key_pub);
-    Poly_free(&poly_irr_l);
-
-    Poly_free(&poly_scalmul);
-    Poly_free(&poly_mult);
     return 0;
 }
 
@@ -118,8 +129,16 @@ typedef struct {
 */
 
 
-void Poly_init(Poly** self){
-    if(NULL == *self= malloc(sizeof(Poly)) ) return -1;
+int Poly_init(Poly** self){
+    if(NULL == (*self= malloc(sizeof(Poly))) ) return EXIT_FAILURE;
+
+    poly_table[poly_count] = (*self);
+    poly_count++;
+    if(poly_count == table_size){
+	printf("Table is full\n");
+        return EXIT_FAILURE;
+    }
+    
 
     (*self) ->coef   = NULL;
     (*self) ->degree = 0;
@@ -127,8 +146,10 @@ void Poly_init(Poly** self){
     (*self) ->free = Poly_free;   
     (*self) ->print = Poly_print;
     (*self) ->scalar_mult = Poly_scalar_mult;
-    (*self) ->add   = Poly_scalar_mult;
+    (*self) ->add   = Poly_add;
     (*self) ->mult  = Poly_mult;
+    (*self) ->set   = Poly_set;
+    return 0;
 }
 
 
@@ -141,11 +162,11 @@ void Poly_free(Poly* ptr){
         ptr->degree = 0;
     }
 }
-void Poly_print(Poly* self);
+void Poly_print(Poly* self){
     printf("Poly Coef:   ");
     printf("{");
     for(int idx=0; idx <= self->degree ; ++idx){
-        if(idx != ptr->degree ){
+        if(idx != self->degree ){
             printf("%d ,",self ->coef[idx]);
         }
         else{
@@ -161,12 +182,12 @@ Poly * Poly_scalar_mult(Poly * self, int multiplier){
     rtn -> coef = malloc( sizeof(int)*(self->degree+1) );
     rtn -> degree = self->degree;
     for(int idx=0;idx <= self->degree ; ++idx){
-        rtn->coef[idx]= (multiplier * ptr->coef[idx])%N;
+        rtn->coef[idx]= (multiplier * self->coef[idx])%N;
     }
     return rtn;
 }
 
-Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
+Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
     Poly * large_ptr = (ptr_a -> degree > ptr_b -> degree ) ? ptr_a  : ptr_b ;
     Poly * small_ptr = (ptr_a -> degree > ptr_b -> degree ) ? ptr_b : ptr_a;
 
@@ -185,10 +206,18 @@ Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
 }
 
 
-Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q){
+Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
+
     int rtn_idx = 0;
     int N = ptr_irr -> degree;
     int tmp;
+
+
+    Poly * poly_rtn;
+    Poly_init(& poly_rtn);
+    poly_rtn -> coef = malloc(sizeof(int)*N);
+    poly_rtn -> degree = N-1;
+
 #ifdef DBG
     printf("poly rnt:"); Poly_print(poly_rtn);
     printf("ptr_a");     Poly_print(ptr_a);
@@ -212,4 +241,19 @@ Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q){
 #endif
         }
     }
+    for (int idx = N-1 ; idx >= 0 ; idx--){
+	if(poly_rtn->coef[idx] != 0 ){
+	    poly_rtn->degree = idx;
+	    break;
+        }
+    }
+    return poly_rtn;
 }
+void Poly_set(Poly *self, int arr[], int degree){
+    self->coef = malloc(sizeof(int)*(degree+1) );
+    for (int i = 0 ; i <= degree ; ++i){
+        self->coef[i]=arr[i];
+    }
+    self->degree = degree;
+
+} 
