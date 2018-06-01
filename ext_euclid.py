@@ -1,5 +1,6 @@
 import numpy as np
 from fractions import gcd
+from numpy.polynomial import Polynomial as P
 
 # remainder version
 # vec1 = np.asarray([1,0])
@@ -23,7 +24,6 @@ from fractions import gcd
 #         break
 
 # Polynomial Version
-from numpy.polynomial import Polynomial as P
 #q = 2
 #R1 = [1,0,0,0,0,1]
 #R2 = [1,1,0,0,1]
