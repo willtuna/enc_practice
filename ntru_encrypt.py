@@ -224,7 +224,20 @@ def main():
     check = poly_ring_mult_over_q_with_irr(f_inv_p,f,P(irr_l),p)
     print("Check",check)
 
-    f_inv_q = inv_poly(P(irr_l),P(f),2)
+#   First Doing the inv_poly in p then extend to p^e
+    exponent = 5
+    base_prime = 2
+    f_inv_base_prime = inv_poly(P(irr_l),P(f), base_prime)
+    n_tmp = 2
+    b_poly = f_inv_base_prime
+    while exponent > 0:
+        b_square = b_poly * b_poly
+        b_poly = 2*b_poly- poly_ring_mult_over_q_with_irr(P(f),b_square,P(irr_l),base_prime**n_tmp)
+        exponent = exponent // 2
+        n_tmp = 2*n_tmp
+    f_inv_q = poly_modN(b_poly,q)
+     
+    print("f_inv_q",f_inv_q.coef)
     check = poly_ring_mult_over_q_with_irr(f_inv_q,f,P(irr_l),q)
     print("Check",check)
     return 0
