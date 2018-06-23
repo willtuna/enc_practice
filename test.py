@@ -65,7 +65,7 @@ def coefficient_init (degree_int,d1_int,d2_int):
 def inv_mod_N(a,N):
     vec1 = np.asarray([1,0])
     vec2 = np.asarray([0,1])
-    rem1 = a % N
+    rem1 = a
     rem2 = N
     
     while True:
@@ -73,20 +73,13 @@ def inv_mod_N(a,N):
         vec1 = vec1 - quo1*vec2
     
         if(rem1 == 0 ):
-            if(rem2 != 1):
-                print('No Inverse')
-                return N# Use as flag
             return vec2[0]
 
         quo2,rem2 = divmod(rem2,rem1)
         vec2 = vec2 - quo2*vec1
     
         if(rem2 == 0 ):
-            if(rem1 != 1):
-                print('No Inverse')
-                return N
             return vec1[0]
-
 def poly_modN(polya, N):
     li = []
     for val in polya.coef:
@@ -102,29 +95,18 @@ def polynomial_div_modN(dividend, divisor, N):
         dividend = poly_modN(dividend,N)
         divisor  = poly_modN(divisor,N)
         deg_diff = dividend.degree() - divisor.degree()
-        if(deg_diff < 0 or dividend == P(0)):
+        if(deg_diff < 0 or dividend == P(0) ):
             return acc ,dividend
         else:
-            if inv_mod_N(divisor.coef[-1],N) == N :# No Inverse Flag
-                coef =dividend.coef[-1]/divisor.coef[-1]
-            else:# coef must be coprime to N
-                coef = dividend.coef[-1] * inv_mod_N(divisor.coef[-1],N)
-            print('inverse  of',divisor.coef[-1],':',coef)
-
-            mult = [0]*(deg_diff+1)# from x^deg_diff to x^0
+            coef = dividend.coef[-1] * inv_mod_N(divisor.coef[-1],N)
+            mult = [0]*(deg_diff+1)
             mult[-1] = coef
             poly_mult = P(mult)
             acc += poly_mult
-            #acc = poly_modN(acc,N)
-            #print(" A  ",dividend.coef)
-            #print("-B: ",poly_modN(poly_mult*divisor,N).coef,'=',poly_mult.coef,'x',divisor.coef)
+            acc = poly_modN(acc,N)
+            print(" A  ",dividend.coef)
+            print("-B: ",(poly_mult*divisor).coef)
             dividend = dividend - poly_mult*divisor
-            #print(" Remainder  ",dividend.coef)
-
-#            print("LEN Dividend:",len(dividend.coef),"  LEN divisor:",len(divisor.coef))
-#            if len(dividend.coef) == len(divisor.coef):
-#                print("EQUAL")
-#                return acc ,dividend
 
 # Ring Multiplication
 def poly_ring_mult_over_q_with_irr(poly1,poly2,irr,q):
@@ -149,7 +131,6 @@ def inv_poly(rem_poly1,rem_poly2,q):
     while True:
         quo1,rem_poly1 = polynomial_div_modN(rem_poly1,rem_poly2,q)
         rem_list =[]
-
         for idx,val in enumerate(rem_poly1.coef):
             rem_list.append( val % q)
 
@@ -212,110 +193,13 @@ def inv_poly(rem_poly1,rem_poly2,q):
 def main():
     N = 11
     q = 32
-    p = 3
-#         0 1 2 3 4  5 6 7 8 9 10 11
-    f = [-1,1,1,0,-1,0,1,0,0,1,-1]
-    g = [-1,0,1,1,0,1,0,0,-1,0,-1]
-#             0 1 2 3 4 5 6 7 8 9 10 11
-    irr_l = [-1,0,0,0,0,0,0,0,0,0,0 ,1]
-
-    f_inv_p = inv_poly(P(irr_l),P(f),p)
-    print("f_inv_p",f_inv_p.coef)
-    check = poly_ring_mult_over_q_with_irr(f_inv_p,f,P(irr_l),p)
-    print("Check",check)
-
-    f_inv_q = inv_poly(P(irr_l),P(f),2)
-    check = poly_ring_mult_over_q_with_irr(f_inv_q,f,P(irr_l),q)
-    print("Check",check)
-    return 0
-    key_pub = p*f_inv_q*P(g)
-    print("Pulic Key:",key_pub.coef)
-
-
-    irr_l =[]
-    for i in range(N+1):
-        if(i == N):
-            irr_l.append(1)
-        elif(i==0):
-            irr_l.append(-1)
-        else:
-            irr_l.append(0)
-    irr = P(irr_l)
+    irr_l    =  [-1,0,0,0,0,0,0,0,0,0,0,1]
+    f_inv_q  =  [5,9,6,16,4,15,16,22,20,18,30]
+    f        =  [-1,1,1,0,-1,0,1,0,0,1,-1]
+    check    =  poly_ring_mult_over_q_with_irr(P(f),P(f_inv_q),P(irr_l),q)
+    print("check:", check)
 
 
 
-    # e(x) = p*r(x)*h(x) + m(x) (mod q)scalmul
-    print("encryption ...")
-    r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
-    cipher  = poly_ring_mult_over_q_with_irr(poly1=r_ccov_h,poly2=P([1]),irr=P(irr_l),q=q)
-    print('cipher:',cipher)
-
-
-    # f(x)*e(x)
-    print("decryption ....")
-    fq_mult_e = poly_ring_mult_over_q_with_irr(poly1=P(f), poly2=P(cipher) , irr=P(irr_l),q=q)
-    print("f(x)*e(x)",fq_mult_e)
-    aft_cent_lift_q = []
-    for idx,val in enumerate(fq_mult_e):
-        if(val > q//2):
-            aft_cent_lift_q.append(val-q)
-        else:
-            aft_cent_lift_q.append(val)
-    print("center lifting over q",aft_cent_lift_q)
-
-    fp_mult_a = poly_ring_mult_over_q_with_irr(poly1=P(aft_cent_lift_q), poly2=P(f_inv_p) , irr=P(irr_l),q=p)
-    print("Fp mult a", fp_mult_a)
-
-    aft_cent_lift_p = []
-    for idx,val in enumerate(fp_mult_a):
-        if(val > p//2):
-            aft_cent_lift_p.append(val-p)
-        else:
-            aft_cent_lift_p.append(val)
-    print("center lifting over p",aft_cent_lift_p)
-
-
-#irr_l =[]
-#for i in range(N+1):
-#    if(i == N):
-#        irr_l.append(1)
-#    elif(i==0):
-#        irr_l.append(-1)
-#    else:
-#        irr_l.append(0)
-#irr = P(irr_l)
-#
-#
-#
-## e(x) = p*r(x)*h(x) + m(x) (mod q)scalmul
-#print("encryption ...")
-#r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
-#cipher  = poly_ring_mult_over_q_with_irr(poly1=r_ccov_h,poly2=P([1]),irr=P(irr_l),q=q)
-#print('cipher:',cipher)
-#
-#
-## f(x)*e(x)
-#print("decryption ....")
-#fq_mult_e = poly_ring_mult_over_q_with_irr(poly1=P(f), poly2=P(cipher) , irr=P(irr_l),q=q)
-#print("f(x)*e(x)",fq_mult_e)
-#aft_cent_lift_q = []
-#for idx,val in enumerate(fq_mult_e):
-#    if(val > q//2):
-#        aft_cent_lift_q.append(val-q)
-#    else:
-#        aft_cent_lift_q.append(val)
-#print("center lifting over q",aft_cent_lift_q)
-#
-#fp_mult_a = poly_ring_mult_over_q_with_irr(poly1=P(aft_cent_lift_q), poly2=P(f_inv_p) , irr=P(irr_l),q=p)
-#print("Fp mult a", fp_mult_a)
-#
-#aft_cent_lift_p = []
-#for idx,val in enumerate(fp_mult_a):
-#    if(val > p//2):
-#        aft_cent_lift_p.append(val-p)
-#    else:
-#        aft_cent_lift_p.append(val)
-#print("center lifting over p",aft_cent_lift_p)
-#
 if __name__ == "__main__":
     main()
