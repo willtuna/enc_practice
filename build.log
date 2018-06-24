@@ -1,0 +1,8 @@
+gcc -o ntru_c.out    ./ntru_encrypt.c
+./ntru_encrypt.c: In function ‘Poly_init’:
+./ntru_encrypt.c:98:12: warning: implicit declaration of function ‘memset’ [-Wimplicit-function-declaration]
+            memset(ptr->coef, 0, (deg+1)*sizeof(int));
+            ^
+./ntru_encrypt.c:98:12: warning: incompatible implicit declaration of built-in function ‘memset’
+./ntru_encrypt.c:98:12: note: include ‘<string.h>’ or provide a declaration of ‘memset’
+gcc -o text2trit.out ./text2trit.c
