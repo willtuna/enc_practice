@@ -58,7 +58,14 @@ def coefficient_init (degree_int,d1_int,d2_int):
             break
 
     print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq ))
-    return r_seq
+    for idx,val in enumerate(reversed(r_seq)):
+        if val != 0:
+            rev_idx = idx
+            break
+
+    end = len(r_seq)-idx
+    print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq[0:end] ))
+    return r_seq[0:end]
 
 
 # Modulus Inverse
@@ -95,8 +102,8 @@ def poly_modN(polya, N):
 
 # Polynomial Division By Polynomial Ring
 def polynomial_div_modN(dividend, divisor, N):
-    print("dividend:",dividend)
-    print("divisor :",divisor)
+    #print("dividend:",dividend)
+    #print("divisor :",divisor)
     acc  = P(0)
     while True:
         dividend = poly_modN(dividend,N)
@@ -109,7 +116,7 @@ def polynomial_div_modN(dividend, divisor, N):
                 coef =dividend.coef[-1]/divisor.coef[-1]
             else:# coef must be coprime to N
                 coef = dividend.coef[-1] * inv_mod_N(divisor.coef[-1],N)
-            print('inverse  of',divisor.coef[-1],':',coef)
+#            print('inverse  of',divisor.coef[-1],':',coef)
 
             mult = [0]*(deg_diff+1)# from x^deg_diff to x^0
             mult[-1] = coef
@@ -194,38 +201,40 @@ def inv_poly(rem_poly1,rem_poly2,q):
 # degree = int( input("Enter degree :") )
 # d1     = int( input("Enter d1 :")     )
 # d2     = int( input("Enter d2 :")     )
-# random_seq = coefficient_init(degree_int=degree,d1_int=d1, d2_int=d2)
 
 #  Introduction to Cryptography Textbook
 #print('public_param:')
-#N = 7
-#p = 3
-#q =41
-#d = 2
-#g        =  [ 0,-1,-1, 0, 1, 0, 1]
-#f        =  [-1, 0, 1, 1,-1, 0, 1]
-#f_inv_q  =  [37, 2,40,21,31,26, 8]
-#f_inv_p  =  [ 1, 1, 1, 1, 0, 2, 1]
-#key_pub  =  [30,26, 8,38, 2,40,20]
-#message  =  [1 ,-1, 1, 1, 0,-1]
-#rand_sel =  [-1, 1, 0, 0, 0,-1, 1]
 def main():
-    N = 11
-    q = 32
+    N = 251
+    q = 128
     p = 3
-#         0 1 2 3 4  5 6 7 8 9 10 11
-    f = [-1,1,1,0,-1,0,1,0,0,1,-1]
-    g = [-1,0,1,1,0,1,0,0,-1,0,-1]
-#             0 1 2 3 4 5 6 7 8 9 10 11
-    irr_l = [-1,0,0,0,0,0,0,0,0,0,0 ,1]
+    d2 = 6
+    d1 = d2 + 1
+    f = coefficient_init(degree_int=N,d1_int=d1, d2_int=d2)
+    g = coefficient_init(degree_int=N,d1_int=d2, d2_int=d2)
+    irr_l = [0]*(N+1)
+    irr_l[0]= -1
+    irr_l[-1]= 1
+
+    print("f = {")
+    print(",".join(map(str, map(int,f))) )
+    print("}")
+
+    print("g = {")
+    print(",".join(map(str, map(int,g))) )
+    print("}")
+
+    print("irr_l = {")
+    print(",".join(map(str, map(int,irr_l))) )
+    print("}")
 
     f_inv_p = inv_poly(P(irr_l),P(f),p)
-    print("f_inv_p",f_inv_p.coef)
+    print("f_inv_p:\n{", ','.join(map(str,map(int,f_inv_p.coef) )),'}' )
     check = poly_ring_mult_over_q_with_irr(f_inv_p,f,P(irr_l),p)
     print("Check",check)
 
 #   First Doing the inv_poly in p then extend to p^e
-    exponent = 5
+    exponent = 7
     base_prime = 2
     f_inv_base_prime = inv_poly(P(irr_l),P(f), base_prime)
     n_tmp = 2
@@ -237,12 +246,13 @@ def main():
         n_tmp = 2*n_tmp
     f_inv_q = poly_modN(b_poly,q)
      
-    print("f_inv_q",f_inv_q.coef)
+    print("f_inv_q:\n{", ','.join(map(str,map(int,f_inv_q.coef) )),'}' )
     check = poly_ring_mult_over_q_with_irr(f_inv_q,f,P(irr_l),q)
     print("Check",check)
     return 0
     key_pub = p*f_inv_q*P(g)
-    print("Pulic Key:",key_pub.coef)
+#    print("Pulic Key:",key_pub.coef)
+    print("f_inv_q:\n{", ','.join(map(str,key_pub.coef)),'}' )
 
 
     irr_l =[]
@@ -254,7 +264,6 @@ def main():
         else:
             irr_l.append(0)
     irr = P(irr_l)
-
 
 
     # e(x) = p*r(x)*h(x) + m(x) (mod q)scalmul

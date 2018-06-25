@@ -1,7 +1,7 @@
 #include "char2trit_lib.h"
 
 // !important out trit value is in (mod3) from 0 to 2
-int char2trit(char * infile_path, Message * msg_arr){
+int char2trit(char * infile_path, Message ** msg_arr){
     FILE *infile_p;
     long int filesize = 0;
 
@@ -62,7 +62,7 @@ int char2trit(char * infile_path, Message * msg_arr){
     }
 
     // Opeing Memory for trits
-    msg_arr = calloc(num_block,sizeof(Message));
+    *msg_arr = calloc(num_block,sizeof(Message));
 
     // Turn into trits
     for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
@@ -70,7 +70,8 @@ int char2trit(char * infile_path, Message * msg_arr){
         printf("\nblk_idx %d : %llu\n",b_idx,tmp_8byte);
 
         for(int t_idx =0 ; t_idx < NUM_TRITS ; ++t_idx ){ // encode to trits and write into trits
-            msg_arr[b_idx].trit_poly[t_idx] = tmp_8byte % 3;
+            (*msg_arr)[b_idx].trit_poly[t_idx] = tmp_8byte % 3;
+            printf("%d ",(*msg_arr)[b_idx].trit_poly[t_idx] );//VEGA
             tmp_8byte /= 3;
         } 
     }
