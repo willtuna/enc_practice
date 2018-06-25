@@ -70,7 +70,9 @@ int char2trit(char * infile_path, Message ** msg_arr){
         printf("\nblk_idx %d : %llu\n",b_idx,tmp_8byte);
 
         for(int t_idx =0 ; t_idx < NUM_TRITS ; ++t_idx ){ // encode to trits and write into trits
-            (*msg_arr)[b_idx].trit_poly[t_idx] = tmp_8byte % 3;
+            int tmp = tmp_8byte % 3;
+            tmp = (tmp > 1) ? tmp-3 : tmp;
+            (*msg_arr)[b_idx].trit_poly[t_idx] = tmp;
             printf("%d ",(*msg_arr)[b_idx].trit_poly[t_idx] );//VEGA
             tmp_8byte /= 3;
         } 

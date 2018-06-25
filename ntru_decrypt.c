@@ -65,18 +65,42 @@ Poly ** poly_table = NULL;
 
 int main(int argc , char** argv){
 
-    char * infilepath  =  argv[1];
-    char * outfilepath =  argv[2];
+    char * cipherpathh  =  argv[1];
+    char * plainTextPath =  argv[2];
 
     Message * arr_trit_msg = NULL;
     int num_block=0;
     FILE * fptr_out = NULL;
-    fptr_out = fopen(outfilepath,"w");
+    FILE * fptr_in  = NULL;
+    fptr_out = fopen(plainTextPath,"w");
+    fptr_in  = fopen(cipherpathh,"r");
+    
+    int tmpdegree,tmpcoef;
 
-    if( (num_block = char2trit(infilepath, &arr_trit_msg)) == -1 ){
-        printf("Error\n");
-        return 1;
+    fscanf(fptr_in,"LINE:[%d]\n",&num_block);
+
+    int ** PolyArr = malloc(sizeof(int*)*num_block);
+    int * degArr = malloc(sizeof(int)*num_block);
+
+    for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
+        fscanf(fptr_in,"degree[%d]: ",&tmpdegree);
+        degArr[blk_idx]  = tmpdegree;
+        PolyArr[blk_idx] = malloc(sizeof(int)*(tmpdegree+1));
+
+        for( int coef_idx=0; coef_idx <= tmpdegree; ++coef_idx){
+            fscanf(fptr_in,"%d ",& tmpcoef);
+            PolyArr[blk_idx][coef_idx]=tmpcoef;
+        }
     }
+/*
+    for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
+        printf("blk_idx: %d : degree[%d]",blk_idx,degArr[blk_idx]);
+        for( int coef_idx=0; coef_idx <= degArr[blk_idx]; ++coef_idx){
+            printf("%d ",PolyArr[blk_idx][coef_idx]);
+        }
+        printf("\n");
+    }
+*/
 
     poly_table = malloc(sizeof(Poly*) * table_size);
     // param shared
@@ -98,40 +122,61 @@ int main(int argc , char** argv){
     poly_f          -> set (poly_f        ,f        ,sizeof(f        )/sizeof(int));
     poly_f_inv_q    -> set (poly_f_inv_q  ,f_inv_q  ,sizeof(f_inv_q  )/sizeof(int));
     poly_f_inv_p    -> set (poly_f_inv_p  ,f_inv_p  ,sizeof(f_inv_p  )/sizeof(int));
-    // param eyncryption
-    Poly * poly_key_pub; 
-    Poly * poly_message; 
-    Poly * poly_rand_sel;
 
-    Poly_init(& poly_key_pub );
-    Poly_init(& poly_message );
-    Poly_init(& poly_rand_sel);
+    printf("Decryption:\n");
 
-    poly_key_pub    -> set (poly_key_pub  ,key_pub  ,sizeof(key_pub  )/sizeof(int));
-//    poly_message    -> set (poly_message  ,message  ,sizeof(message  )/sizeof(int));
-    poly_rand_sel   -> set (poly_rand_sel ,rand_sel ,sizeof(rand_sel )/sizeof(int));
+    Poly * poly_cipher; 
+    Poly_init(& poly_cipher);
 
-//  Encryption intermediate ptr
+    Poly* poly_fq_mult_e   ; 
+    Poly* poly_centerlift_q; 
+    Poly* f_inv_p_center   ; 
+    Poly* decrypted        ; 
 
-    Poly* poly_scalmul ;
-    Poly* poly_mult    ;
-    Poly* poly_cipher  ;
 
-    fprintf(fptr_out,"LINE:[%d]\n",num_block);
+    unsigned long long int tmp_8byte_decode;
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-        printf("------------------- DBG coredump blk_idx: %d --------------\n",blk_idx);
-        if(poly_message -> coef != NULL){// has previous message
-             poly_message -> free(poly_message); 
-             poly_scalmul -> free(poly_scalmul); 
-             poly_mult    -> free(poly_mult   ); 
-             poly_cipher  -> free(poly_cipher ); 
+        printf("--------------- DBG blk_idx: %d ------------------\n",blk_idx);
+        if(poly_cipher-> coef != NULL){// has previous message
+             poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
+             poly_centerlift_q      -> free(poly_centerlift_q ); 
+             f_inv_p_center         -> free(f_inv_p_center    ); 
+             decrypted              -> free(decrypted         ); 
         }
-        poly_message -> set (poly_message  , arr_trit_msg[blk_idx].trit_poly, NUM_TRITS);
-        poly_scalmul = poly_rand_sel -> scalar_mult(poly_rand_sel, p) ;
-        poly_mult    = poly_scalmul  -> mult(poly_scalmul, poly_key_pub, poly_irr_l, q);
-        poly_cipher  = poly_mult -> add ( poly_mult, poly_message, q);
-        File_export(fptr_out,poly_cipher);
+        poly_cipher       -> set (poly_cipher, PolyArr[blk_idx] , degArr[blk_idx]+1);
+        poly_fq_mult_e    = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
+        poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
+        f_inv_p_center    =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
+        decrypted         =  f_inv_p_center -> center_lift(f_inv_p_center, p);
+        for(int t_idx = NUM_TRITS-1 ; t_idx >= 0  ; --t_idx ){ // encode to trits and write into trits
+            tmp_8byte_decode *= 3;
+            int tmp = decrypted->coef[t_idx]; 
+            tmp = (tmp >= 0)? tmp : (3+tmp);
+            tmp_8byte_decode += tmp;
+        } 
+        char chr_tmp;
+        for(int shf_idx =7; shf_idx >= 0 ; --shf_idx){// take out 8 bit by 8 bit
+            chr_tmp =  tmp_8byte_decode >> (shf_idx*8) & 0xff; // after shifting , taking 8 bit out
+            printf("%c",chr_tmp);
+        }
     }
+/*
+    Poly* poly_fq_mult_e = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
+    printf("Poly fq mult cipher\n");
+    poly_fq_mult_e -> print(poly_fq_mult_e);
+
+    printf("Center Lifting\n");
+    Poly* poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
+    poly_centerlift_q -> print(poly_centerlift_q);
+
+    printf("Poly f_inv_q mult center_lift q\n");
+    Poly* f_inv_p_center =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
+    f_inv_p_center -> print(f_inv_p_center);
+
+    printf("Center Lifting\n");
+    Poly* decrypted =  f_inv_p_center -> center_lift(f_inv_p_center, p);
+    decrypted -> print(decrypted);
+*/
 
 
     // free the polynomial
@@ -145,22 +190,6 @@ int main(int argc , char** argv){
     return 0;
 }
 
-
-
-
-
-/* ref
-typedef struct {
-    int * coef;
-    int degree;
-
-    func_p free,
-           print;
-    func_p_i scalar_mult;
-    func_p_p_i add;
-    func_p_p_p_i mult;
-}Poly;
-*/
 
 
 int Poly_init(Poly** self){
@@ -219,7 +248,6 @@ void Poly_print(Poly* self){
 }
 
 void File_export(FILE * fptr_out,Poly* self){
-    fprintf(fptr_out,"degree[%d]: ",self ->degree);
     for(int idx=0; idx <= self->degree ; ++idx){
         if(idx != self->degree ){
             fprintf(fptr_out,"%d ",self ->coef[idx]);
