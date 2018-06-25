@@ -27,7 +27,7 @@ struct Poly {
     int * coef;
     int degree;
     func_p free,print;
-    func_p_i scalar_mult;
+    func_p_i scalar_mult,center_lift;
     func_p_p_i add;
     func_p_p_p_i mult;
     func_p_arr_i set;
@@ -41,6 +41,7 @@ int  Poly_init(Poly** pt2pt);
 
 void Poly_free(Poly* ptr);
 void Poly_print(Poly* self);
+Poly * Poly_CenterLift(Poly *ptr_a, int q);
 Poly * Poly_scalar_mult(Poly * self, int multiplier);
 Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
 Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
@@ -102,6 +103,32 @@ int main(int argc , char** argv){
     printf("Cipher:  ");
     poly_cipher -> print(poly_cipher);
 
+
+    printf("Decryption:\n");
+    Poly* poly_fq_mult_e = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
+    printf("Poly fq mult cipher\n");
+    poly_fq_mult_e -> print(poly_fq_mult_e);
+
+    printf("Center Lifting\n");
+    Poly* poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
+    poly_centerlift_q -> print(poly_centerlift_q);
+
+    printf("Poly f_inv_q mult center_lift q\n");
+    Poly* f_inv_p_center =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
+    f_inv_p_center -> print(f_inv_p_center);
+
+    printf("Center Lifting\n");
+    Poly* decrypted =  f_inv_p_center -> center_lift(f_inv_p_center, p);
+    decrypted -> print(decrypted);
+
+
+    
+    
+
+    
+
+
+    // free the polynomial
     while(poly_count){
         int idx = --poly_count;
 	poly_table[idx] -> free(poly_table[idx]);
@@ -149,6 +176,7 @@ int Poly_init(Poly** self){
     (*self) ->add   = Poly_add;
     (*self) ->mult  = Poly_mult;
     (*self) ->set   = Poly_set;
+    (*self) ->center_lift= Poly_CenterLift;
     return 0;
 }
 
@@ -163,14 +191,14 @@ void Poly_free(Poly* ptr){
     }
 }
 void Poly_print(Poly* self){
-    printf("Poly Coef:   ");
-    printf("{");
+    //printf("Poly Coef:   ");
+    //printf("{");
     for(int idx=0; idx <= self->degree ; ++idx){
         if(idx != self->degree ){
-            printf("%d ,",self ->coef[idx]);
+            printf("%d ",self ->coef[idx]);
         }
         else{
-            printf("%d }\n",self->coef[idx]);
+            printf("%d\n",self->coef[idx]);
         }
     }
 }
@@ -205,6 +233,23 @@ Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
     return rtn;
 }
 
+Poly * Poly_CenterLift(Poly *ptr_a, int q){
+
+    Poly * rtn;
+    Poly_init(&rtn);   
+    rtn -> coef = malloc( sizeof(int)*(ptr_a->degree + 1) );
+    rtn -> degree = ptr_a -> degree;
+
+    int tmp;
+    for(int i =0 ; i <= (ptr_a -> degree) ; ++i){
+        tmp = ptr_a->coef[i];
+        if( tmp > (q/2))
+            rtn -> coef[i] = tmp - q;
+        else 
+            rtn -> coef[i] = tmp ;
+    }
+    return rtn;
+}
 
 Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
 
@@ -257,3 +302,4 @@ void Poly_set(Poly *self, int arr[], int degree){
     self->degree = degree;
 
 } 
+
