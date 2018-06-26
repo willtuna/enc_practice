@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "bit2tritCon/char2trit_lib.h"
+#include "../bit2tritCon/char2trit_lib.h"
 #include <cuda.h>//**************************************************
 #include <cuda_runtime.h>//**************************************************
 //#define DBG 0
