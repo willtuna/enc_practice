@@ -6,7 +6,7 @@
 // !important out trit value is in (mod3) from 0 to 2
 
 typedef struct trits {
-    char trit_poly [NUM_TRITS] ;
+    int trit_poly [NUM_TRITS] ;
 } Message, *Message_ptr;
 
 long int filesize = 0;

@@ -133,11 +133,13 @@ int main(int argc , char** argv){
     Poly* f_inv_p_center   ; 
     Poly* decrypted        ; 
 
+    Message * decrypted_msg_arr = malloc(sizeof(Message)*num_block);
 
     unsigned long long int tmp_8byte_decode;
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
         printf("--------------- DBG blk_idx: %d ------------------\n",blk_idx);
         if(poly_cipher-> coef != NULL){// has previous message
+             poly_cipher            -> free(poly_cipher       ); 
              poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
              poly_centerlift_q      -> free(poly_centerlift_q ); 
              f_inv_p_center         -> free(f_inv_p_center    ); 
@@ -148,18 +150,19 @@ int main(int argc , char** argv){
         poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
         f_inv_p_center    =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
         decrypted         =  f_inv_p_center -> center_lift(f_inv_p_center, p);
-        for(int t_idx = NUM_TRITS-1 ; t_idx >= 0  ; --t_idx ){ // encode to trits and write into trits
-            tmp_8byte_decode *= 3;
-            int tmp = decrypted->coef[t_idx]; 
-            tmp = (tmp >= 0)? tmp : (3+tmp);
-            tmp_8byte_decode += tmp;
-        } 
-        char chr_tmp;
-        for(int shf_idx =7; shf_idx >= 0 ; --shf_idx){// take out 8 bit by 8 bit
-            chr_tmp =  tmp_8byte_decode >> (shf_idx*8) & 0xff; // after shifting , taking 8 bit out
-            printf("%c",chr_tmp);
+        for (int t_idx = 0; t_idx <= (decrypted -> degree) ; ++ t_idx){
+            int trit = decrypted->coef[t_idx];
+            printf("%d ",trit);
+//      Convert -1 0 1 to 2 0 1
+            trit = (trit == -1)? 2 : trit;
+            decrypted_msg_arr[blk_idx].trit_poly[t_idx] = trit;
         }
+        for (int t_idx = decrypted->degree +1 ; t_idx < NUM_TRITS ; ++t_idx){
+            decrypted_msg_arr[blk_idx].trit_poly[t_idx] = 0;
+        }
+        printf("\n");
     }
+    trit2char(decrypted_msg_arr,num_block);
 /*
     Poly* poly_fq_mult_e = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
     printf("Poly fq mult cipher\n");
@@ -180,11 +183,11 @@ int main(int argc , char** argv){
 
 
     // free the polynomial
-    while(poly_count){
-        int idx = --poly_count;
-	poly_table[idx] -> free(poly_table[idx]);
-        poly_table[idx] = NULL;
-    }
+    //while(poly_count){
+    //    int idx = --poly_count;
+	//poly_table[idx] -> free(poly_table[idx]);
+    //    poly_table[idx] = NULL;
+    //}
     fclose(fptr_out);
 
     return 0;

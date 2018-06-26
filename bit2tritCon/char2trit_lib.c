@@ -64,15 +64,17 @@ int char2trit(char * infile_path, Message ** msg_arr){
     // Opeing Memory for trits
     *msg_arr = calloc(num_block,sizeof(Message));
 
+
     // Turn into trits
     for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
         tmp_8byte = block_array8b_ptr[b_idx];
         printf("\nblk_idx %d : %llu\n",b_idx,tmp_8byte);
 
         for(int t_idx =0 ; t_idx < NUM_TRITS ; ++t_idx ){ // encode to trits and write into trits
-            int tmp = tmp_8byte % 3;
-            tmp = (tmp > 1) ? tmp-3 : tmp;
-            (*msg_arr)[b_idx].trit_poly[t_idx] = tmp;
+    // Convert trit {0 1 2} to  0 1 -1
+            int trit = (tmp_8byte % 3);
+            trit = (trit == 2)? -1 : trit;
+            (*msg_arr)[b_idx].trit_poly[t_idx] = trit;
             printf("%d ",(*msg_arr)[b_idx].trit_poly[t_idx] );//VEGA
             tmp_8byte /= 3;
         } 
