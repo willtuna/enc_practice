@@ -1,8 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../bit2tritCon/char2trit_lib.h"
 #include <cuda.h>//**************************************************
 #include <cuda_runtime.h>//**************************************************
+
+#define NUM_TRITS 41
+
+typedef struct trits {
+    int trit_poly [NUM_TRITS] ;
+} Message;
+
+int char2trit(char * infile_path, Message **msg_arr);
+int trit2char(Message *const decrypted_msg_arr, int num_block);
+void read_tritfile(FILE *ptr);
+
+
+
+
 //#define DBG 0
 int N = 7;
 int p = 3;
@@ -59,8 +72,9 @@ Poly * Poly_scalar_mult(Poly * self, int multiplier);
 Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
 Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
 void Poly_set(Poly *self, int [], int size); 
-void File_export(FILE * fptr_out,Poly* self);
+void File_export(FILE * fptr_out, Cipher* self);
 
+void Cipher_set(int * arr, Poly *self);
 
 /* ref 
 print("encryption ...")
@@ -69,7 +83,7 @@ cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l
 print('cipher:',cipher)
 */
 
-__global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cipher_arr, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel){
+__global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cipher_arr, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel, int p, int q){
 	//int blk_idx = blockIdx.x*blockDim.x+threadIdx.x;
 	int blk_idx=0;
 	int TotalThread = blockDim.x*gridDim.x;
@@ -90,7 +104,8 @@ __global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cip
 			poly_cipher  -> free(poly_cipher ); 
 		}
 		poly_message -> set (poly_message  , arr_trit_msg[blk_idx].trit_poly, NUM_TRITS);
-		for(int i = 0, i <= NUM_TRITS, i++){
+                int i=0;
+		for(i = 0; i <= NUM_TRITS; i++){
 			if(poly_message -> coef[i] < 0){
 				poly_message -> coef[i] += 3;
 			}
@@ -98,20 +113,24 @@ __global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cip
 		poly_scalmul = poly_rand_sel -> scalar_mult(poly_rand_sel, p) ;
 		poly_mult    = poly_scalmul  -> mult(poly_scalmul, poly_key_pub, poly_irr_l, q);
 		poly_cipher  = poly_mult -> add ( poly_mult, poly_message, q);
-		
-		Cipher_set(poly_cipher_arr[blk_idx].Cipher_poly, poly_cipher)
+
+
+		Cipher_set(poly_cipher_arr[blk_idx].Cipher_poly, poly_cipher);
 		poly_cipher_arr[blk_idx].degree = poly_cipher -> degree;
 		//弄成array type => poly_cipher_arr[blk_idx]
 		//File_export(fptr_out,poly_cipher)移到main;
 	}
 }
 
-float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel){
+float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel, int p, int q){
 	
 	Message * darr_trit_msg;
 	Poly * dpoly_irr_l, * dpoly_key_pub, * dpoly_rand_sel;
+        int * dpoly_irr_l_coef   ,* dpoly_key_pub_coef ,* dpoly_rand_sel_coef;
+
+
 	Cipher * dpoly_cipher;
-	IndexSave* dInd;
+
 	//int * poly_irr_l_coef, 
 	// Creat Timing Event
   	cudaEvent_t start, stop;
@@ -126,7 +145,7 @@ float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Po
 	cudaMalloc((void**)&dpoly_key_pub_coef ,sizeof(int)*(poly_key_pub->degree+1));
 	cudaMalloc((void**)&dpoly_rand_sel     ,sizeof(Poly)*1);
 	cudaMalloc((void**)&dpoly_rand_sel_coef,sizeof(int)*(poly_rand_sel->degree+1));
-	cudaCalloc((void**)&dpoly_cipher       ,sizeof(Cipher)*num_block);//initialize
+	cudaMalloc((void**)&dpoly_cipher       ,sizeof(Cipher)*num_block);//initialize
 	// Allocate Memory Space on Device (for observation)
 	//cudaMalloc((void**)&dInd,sizeof(IndexSave)*SIZE);
 
@@ -152,7 +171,7 @@ float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Po
 	// Lunch Kernel
 	dim3 dimGrid (2);
 	dim3 dimBlock(4);
-	encrypt<<<dimGrid,dimBlock>>>(darr_trit_msg, num_block, dpoly_cipher, dpoly_irr_l, dpoly_key_pub, dpoly_rand_sel);
+	encrypt<<<dimGrid,dimBlock>>>(darr_trit_msg, num_block, dpoly_cipher, dpoly_irr_l, dpoly_key_pub, dpoly_rand_sel,p,q);
 
 	// Stop Timer
 	cudaEventRecord(stop, 0);
@@ -188,7 +207,7 @@ int main(int argc , char** argv){
     FILE * fptr_out = NULL;
     fptr_out = fopen(outfilepath,"w");
 	
-    if( (num_block = char2trit(infilepath, arr_trit_msg)) == -1 ){
+    if( (num_block = char2trit(infilepath, &arr_trit_msg)) == -1 ){
         printf("Error\n");
         return 1;
     }
@@ -218,7 +237,7 @@ int main(int argc , char** argv){
     Poly * poly_rand_sel;
 
     Poly_init(& poly_key_pub );
-    Poly_init(& poly_message );
+
     Poly_init(& poly_rand_sel);
 
     poly_key_pub    -> set (poly_key_pub  ,key_pub  ,sizeof(key_pub  )/sizeof(int));
@@ -227,15 +246,15 @@ int main(int argc , char** argv){
 
 	/* CPU side*/
 	
-	Cipher * arr_cipher_cpu = malloc(sizeof(Cipher)*num_block);
+	Cipher * arr_cipher_cpu = (Cipher *)malloc(sizeof(Cipher)*num_block);
 	
 	/* GPU side*/
-	float elapsedTime = GPU_kernel(arr_trit_msg, num_block, arr_cipher_cpu, poly_irr_l, poly_key_pub, poly_rand_sel);
+	float elapsedTime = GPU_kernel(arr_trit_msg, num_block, arr_cipher_cpu, poly_irr_l, poly_key_pub, poly_rand_sel, p , q);
 	
 	printf("GPU time = %5.2f ms\n", elapsedTime);
 	
 	for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-	File_export(fptr_out,arr_cipher_cpu[blk_idx]);
+	File_export(fptr_out,&arr_cipher_cpu[blk_idx]);
 	}
 	
 	free(arr_cipher_cpu);
@@ -319,7 +338,7 @@ typedef struct {
 
 
 int Poly_init(Poly** self){
-    if(NULL == (*self= malloc(sizeof(Poly))) ) return EXIT_FAILURE;
+    if(NULL == (*self= (Poly*)malloc(sizeof(Poly))) ) return EXIT_FAILURE;
 
     (*self) ->coef   = NULL;
     (*self) ->degree = 0;
@@ -357,13 +376,13 @@ void Poly_print(Poly* self){
     }
 }
 
-void File_export(FILE * fptr_out,Poly* self){
+void File_export(FILE * fptr_out, Cipher* self){
     for(int idx=0; idx <= self->degree ; ++idx){
         if(idx != self->degree ){
-            fprintf(fptr_out,"%d ",self ->coef[idx]);
+            fprintf(fptr_out,"%d ",self ->Cipher_poly[idx]);
         }
         else{
-            fprintf(fptr_out,"%d\n",self->coef[idx]);
+            fprintf(fptr_out,"%d\n",self->Cipher_poly[idx]);
         }
     }
 }
@@ -371,7 +390,7 @@ void File_export(FILE * fptr_out,Poly* self){
 Poly * Poly_scalar_mult(Poly * self, int multiplier){
     Poly * rtn;
     Poly_init(&rtn);   
-    rtn -> coef = malloc( sizeof(int)*(self->degree+1) );
+    rtn -> coef = (int*)malloc( sizeof(int)*(self->degree+1) );
     rtn -> degree = self->degree;
     for(int idx=0;idx <= self->degree ; ++idx){
         rtn->coef[idx]= (multiplier * self->coef[idx])%N;
@@ -385,7 +404,7 @@ Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
 
     Poly * rtn;
     Poly_init(&rtn);   
-    rtn -> coef = malloc( sizeof(int)*(large_ptr->degree+1) );
+    rtn -> coef = (int*)malloc( sizeof(int)*(large_ptr->degree+1) );
     rtn -> degree = large_ptr->degree;
 
     for(int idx =0 ; idx <= large_ptr -> degree ; ++idx){
@@ -401,7 +420,7 @@ Poly * Poly_CenterLift(Poly *ptr_a, int q){
 
     Poly * rtn;
     Poly_init(&rtn);   
-    rtn -> coef = malloc( sizeof(int)*(ptr_a->degree + 1) );
+    rtn -> coef = (int*)malloc( sizeof(int)*(ptr_a->degree + 1) );
     rtn -> degree = ptr_a -> degree;
 
     int tmp;
@@ -424,7 +443,7 @@ Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
 
     Poly * poly_rtn;
     Poly_init(& poly_rtn);
-    poly_rtn -> coef = malloc(sizeof(int)*N);
+    poly_rtn -> coef = (int*)malloc(sizeof(int)*N);
     poly_rtn -> degree = N-1;
 
 #ifdef DBG
@@ -466,16 +485,153 @@ void Poly_set(Poly *self, int arr[], int size){
             break;
         }
     }
-    self->coef = malloc(sizeof(int)*size );
+    self->coef = (int*)malloc(sizeof(int)*size );
     for (int i = 0 ; i <= self->degree ; ++i){
         self->coef[i]=arr[i];
     }
 } 
 
-void Cipher_set(int * arr, Poly *self){
+__device__ void Cipher_set(int * arr, Poly *self){
     for (int i = 0 ; i <= self->degree ; ++i){
         arr[i]=self->coef[i];
     }
 } 
 
 
+
+
+//              char2trit 
+int char2trit(char * infile_path, Message ** msg_arr){
+    FILE *infile_p;
+    long int filesize = 0;
+
+    infile_p = fopen(infile_path ,"r");
+    if(infile_p == NULL){
+        printf("Error Opeing Files %s\n", infile_path);
+        return -1;
+    }
+    else{
+        long int start_pos,end_pos;
+        printf("Opeing Files :%s   Success !\n", infile_path);
+        fseek(infile_p,0L,SEEK_END);
+        end_pos   = ftell(infile_p);
+        fseek(infile_p,0L,SEEK_SET);
+        start_pos = ftell(infile_p);
+        printf("File End Pos  : %ld\nFile Start Pos: %ld\n",end_pos,start_pos);
+        filesize = end_pos -start_pos;
+        printf("File Size     : %ld\n",filesize);
+    }
+    char char_read;
+    unsigned long long int tmp_8byte;
+    unsigned long long int * block_array8b_ptr;
+
+    // filesize is number of byte
+    // Our array element needs chunk it into 8-byte block
+    // Number of block = filesize/8+1
+    int num_block = (filesize%8 == 0 )? filesize/8 : filesize/8+1;
+    printf("Number of Block: %d \n",num_block);
+    // calloc to clean the malloc
+    block_array8b_ptr = (unsigned long long *)calloc(num_block,sizeof(unsigned long long int));
+
+    int chr_count = 0;
+    int blk_idx = 0;
+    while( (char_read = fgetc(infile_p))  != EOF){
+       printf("%c",char_read);
+       tmp_8byte = (chr_count == 0) ? 0 :tmp_8byte << 8;
+       tmp_8byte = tmp_8byte | char_read; // shift one char size(8 bit) then bit wise or
+
+       chr_count = (chr_count+1) % 8 ;
+
+       if (chr_count == 0){
+           block_array8b_ptr[blk_idx] = tmp_8byte;// store tmp code into array
+           blk_idx ++;
+       }
+    }
+    // Padding Last Word with 0
+    if (blk_idx == num_block-1){
+           while(chr_count != 0){ 
+               tmp_8byte = tmp_8byte << 8;
+               chr_count = (chr_count+1) % 8 ;
+           }
+           block_array8b_ptr[blk_idx] = tmp_8byte;// store last word into block array 
+        blk_idx++;
+    }
+    if (blk_idx != num_block){
+        printf("Block Segmentation Fault !!! Debug\n");
+        return -1;
+    }
+
+    // Opeing Memory for trits
+    *msg_arr = (Message *)calloc(num_block,sizeof(Message));
+
+    // Turn into trits
+    for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
+        tmp_8byte = block_array8b_ptr[b_idx];
+        printf("\nblk_idx %d : %llu\n",b_idx,tmp_8byte);
+
+        for(int t_idx =0 ; t_idx < NUM_TRITS ; ++t_idx ){ // encode to trits and write into trits
+    // Convert trit {0 1 2} to  0 1 -1
+            int trit = (tmp_8byte % 3);
+            trit = (trit == 2)? -1 : trit;
+            (*msg_arr)[b_idx].trit_poly[t_idx] = trit;
+            tmp_8byte /= 3;
+        } 
+    }
+    fclose(infile_p);
+    // Finish Encoding to Trits
+    return num_block;
+}
+    
+
+
+int trit2char(Message *const decrypted_msg_arr, int num_block){
+    unsigned long long int tmp_8byte_decode;
+    printf("Decoding From Trits to char\n");
+    for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
+            tmp_8byte_decode = 0;
+        for(int t_idx = NUM_TRITS-1 ; t_idx >= 0  ; --t_idx ){ // encode to trits and write into trits
+            tmp_8byte_decode *= 3;
+            tmp_8byte_decode += decrypted_msg_arr[b_idx].trit_poly[t_idx]; 
+        } 
+
+//        printf("b_idx: %d: ", b_idx);
+//        printf("tmp_8byte : %llu  :",tmp_8byte_decode);
+        char chr_tmp;
+        for(int shf_idx =7; shf_idx >= 0 ; --shf_idx){// take out 8 bit by 8 bit
+            chr_tmp =  tmp_8byte_decode >> (shf_idx*8) & 0xff; // after shifting , taking 8 bit out
+            printf("%c",chr_tmp);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+
+
+
+void read_tritfile(FILE *ptr){
+    printf("File Decoding ..........\n");
+    unsigned long long int tmp_8byte_decode = 0;
+    size_t bufsize = NUM_TRITS+1;// Null Character
+    char * buffer;
+    buffer = (char*)malloc(bufsize*sizeof(char));
+    if (buffer == NULL){
+        printf("Error Unable to allocate buffer");
+        exit(1);
+    }
+    int line_num = 0;
+    char garbage;
+    while ( fgets( buffer,bufsize, ptr) != NULL){
+        garbage = fgetc(ptr);
+        tmp_8byte_decode = 0;
+        for(int t_idx = NUM_TRITS-1 ; t_idx >= 0  ; --t_idx ){ // encode to trits and write into trits
+            tmp_8byte_decode *= 3;
+            tmp_8byte_decode += buffer[t_idx]-'0';
+        } 
+        char chr_tmp;
+        for(int shf_idx =7; shf_idx >= 0 ; --shf_idx){// take out 8 bit by 8 bit
+            chr_tmp =  tmp_8byte_decode >> (shf_idx*8) & 0xff; // after shifting , taking 8 bit out
+            printf("%c",chr_tmp);
+        }
+    }
+    free(buffer);
+}
