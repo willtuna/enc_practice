@@ -136,8 +136,8 @@ int main(int argc , char** argv){
     Message * decrypted_msg_arr = malloc(sizeof(Message)*num_block);
 
     unsigned long long int tmp_8byte_decode;
+    printf("--------------- Number of Block%d ------------------\n", num_block);
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-        printf("--------------- DBG blk_idx: %d ------------------\n",blk_idx);
         if(poly_cipher-> coef != NULL){// has previous message
              poly_cipher            -> free(poly_cipher       ); 
              poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
@@ -150,6 +150,7 @@ int main(int argc , char** argv){
         poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
         f_inv_p_center    =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
         decrypted         =  f_inv_p_center -> center_lift(f_inv_p_center, p);
+        printf("------------------- DBG coredump blk_idx: %d --------------\n",blk_idx);
         for (int t_idx = 0; t_idx <= (decrypted -> degree) ; ++ t_idx){
             int trit = decrypted->coef[t_idx];
             printf("%d ",trit);
@@ -157,6 +158,7 @@ int main(int argc , char** argv){
             trit = (trit == -1)? 2 : trit;
             decrypted_msg_arr[blk_idx].trit_poly[t_idx] = trit;
         }
+        printf("\n");
         for (int t_idx = decrypted->degree +1 ; t_idx < NUM_TRITS ; ++t_idx){
             decrypted_msg_arr[blk_idx].trit_poly[t_idx] = 0;
         }
@@ -183,11 +185,11 @@ int main(int argc , char** argv){
 
 
     // free the polynomial
-    //while(poly_count){
-    //    int idx = --poly_count;
-	//poly_table[idx] -> free(poly_table[idx]);
-    //    poly_table[idx] = NULL;
-    //}
+    while(poly_count){
+        int idx = --poly_count;
+	poly_table[idx] -> free(poly_table[idx]);
+        poly_table[idx] = NULL;
+    }
     fclose(fptr_out);
 
     return 0;

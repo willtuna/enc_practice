@@ -1,2 +1,6 @@
 #! /bin/bash
-make -k 2>&1 | tee build.log
+make 
+
+./encrypt.out test_text.log cipher
+
+./decrypt.out cipher plaintxt

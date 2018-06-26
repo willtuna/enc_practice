@@ -244,7 +244,6 @@ def main():
     key_pub = p*f_inv_q*P(g)
     print("Pulic Key:",key_pub.coef)
 
-
     irr_l =[]
     for i in range(N+1):
         if(i == N):

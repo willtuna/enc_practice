@@ -57,14 +57,14 @@ def coefficient_init (degree_int,d1_int,d2_int):
         if(d1_int ==0 and d2_int ==0):
             break
 
-    print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq ))
+#    print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq ))
     for idx,val in enumerate(reversed(r_seq)):
         if val != 0:
             rev_idx = idx
             break
 
     end = len(r_seq)-idx
-    print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq[0:end] ))
+#    print("Return Sequence :\n"+'  '.join(str(c) for c in r_seq[0:end] ))
     return r_seq[0:end]
 
 
@@ -212,9 +212,11 @@ def main():
     d1 = d2 + 1
     f = coefficient_init(degree_int=N,d1_int=d1, d2_int=d2)
     g = coefficient_init(degree_int=N,d1_int=d2, d2_int=d2)
+    rand_sel = coefficient_init(degree_int=N,d1_int=10, d2_int=10)
     irr_l = [0]*(N+1)
     irr_l[0]= -1
     irr_l[-1]= 1
+    message = [-1,0,1,1,1,-1,0,-1]
 
     print("f = {")
     print(",".join(map(str, map(int,f))) )
@@ -226,6 +228,10 @@ def main():
 
     print("irr_l = {")
     print(",".join(map(str, map(int,irr_l))) )
+    print("}")
+
+    print("rand_sel = {")
+    print(",".join(map(str, map(int,rand_sel))) )
     print("}")
 
     f_inv_p = inv_poly(P(irr_l),P(f),p)
@@ -249,13 +255,14 @@ def main():
     print("f_inv_q:\n{", ','.join(map(str,map(int,f_inv_q.coef) )),'}' )
     check = poly_ring_mult_over_q_with_irr(f_inv_q,f,P(irr_l),q)
     print("Check",check)
-    return 0
+
     key_pub = p*f_inv_q*P(g)
-#    print("Pulic Key:",key_pub.coef)
-    print("f_inv_q:\n{", ','.join(map(str,key_pub.coef)),'}' )
+    print("Pulic key:\n{", ','.join(map(str,map(int,key_pub.coef) )),'}' )
 
+    print("Before Encrypt Message:")
+    print(message)
 
-    irr_l =[]
+    irr_l =[]*(N+1)
     for i in range(N+1):
         if(i == N):
             irr_l.append(1)
@@ -296,48 +303,10 @@ def main():
             aft_cent_lift_p.append(val)
     print("center lifting over p",aft_cent_lift_p)
 
+    key_pub = p*f_inv_q*P(g)
+    print("Pulic Key:",key_pub.coef)
+    
+    return 0
 
-#irr_l =[]
-#for i in range(N+1):
-#    if(i == N):
-#        irr_l.append(1)
-#    elif(i==0):
-#        irr_l.append(-1)
-#    else:
-#        irr_l.append(0)
-#irr = P(irr_l)
-#
-#
-#
-## e(x) = p*r(x)*h(x) + m(x) (mod q)scalmul
-#print("encryption ...")
-#r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
-#cipher  = poly_ring_mult_over_q_with_irr(poly1=r_ccov_h,poly2=P([1]),irr=P(irr_l),q=q)
-#print('cipher:',cipher)
-#
-#
-## f(x)*e(x)
-#print("decryption ....")
-#fq_mult_e = poly_ring_mult_over_q_with_irr(poly1=P(f), poly2=P(cipher) , irr=P(irr_l),q=q)
-#print("f(x)*e(x)",fq_mult_e)
-#aft_cent_lift_q = []
-#for idx,val in enumerate(fq_mult_e):
-#    if(val > q//2):
-#        aft_cent_lift_q.append(val-q)
-#    else:
-#        aft_cent_lift_q.append(val)
-#print("center lifting over q",aft_cent_lift_q)
-#
-#fp_mult_a = poly_ring_mult_over_q_with_irr(poly1=P(aft_cent_lift_q), poly2=P(f_inv_p) , irr=P(irr_l),q=p)
-#print("Fp mult a", fp_mult_a)
-#
-#aft_cent_lift_p = []
-#for idx,val in enumerate(fp_mult_a):
-#    if(val > p//2):
-#        aft_cent_lift_p.append(val-p)
-#    else:
-#        aft_cent_lift_p.append(val)
-#print("center lifting over p",aft_cent_lift_p)
-#
 if __name__ == "__main__":
     main()
