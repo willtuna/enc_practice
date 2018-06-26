@@ -17,7 +17,7 @@ void read_tritfile(FILE *ptr);
 
 
 //#define DBG 0
-int N = 7;
+#define N  251
 int p = 3;
 int q =128;
 int d = 2;
@@ -63,18 +63,18 @@ struct Poly {
 
 int table_size = 1000;
 int  poly_count = 0;
-int  Poly_init(Poly** pt2pt);
+__host__ __device__ int Poly_init(Poly** self);
 
-void Poly_free(Poly* ptr);
-void Poly_print(Poly* self);
-Poly * Poly_CenterLift(Poly *ptr_a, int q);
-Poly * Poly_scalar_mult(Poly * self, int multiplier);
-Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
-Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
-void Poly_set(Poly *self, int [], int size); 
-void File_export(FILE * fptr_out, Cipher* self);
+__host__ __device__ void Poly_free(Poly* ptr);
+__host__ __device__ void Poly_print(Poly* self);
+__host__ __device__ Poly * Poly_CenterLift(Poly *ptr_a, int q);
+__host__ __device__ Poly * Poly_scalar_mult(Poly * self, int multiplier);
+__host__ __device__ Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
+__host__ __device__ Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
+__host__ __device__ void Poly_set(Poly *self, int [], int size); 
+__host__ void File_export(FILE * fptr_out, Cipher* self);
 
-void Cipher_set(int * arr, Poly *self);
+__host__ __device__ void Cipher_set(int * arr, Poly *self);
 
 /* ref 
 print("encryption ...")
@@ -212,14 +212,6 @@ int main(int argc , char** argv){
         printf("Error\n");
         return 1;
     }
-	int will;
-	int ji;
-	for (will =0 ; will < num_block ; ++will){
-	    for(ji = 0 ; ji < NUM_TRITS ; ++ji){
-		    printf("%d ", arr_trit_msg[will].trit_poly[ji]);
-		}
-		printf("\n");
-	}
     // param shared
     Poly * poly_irr_l  ; 
     Poly_init(& poly_irr_l   );
@@ -344,7 +336,7 @@ typedef struct {
 */
 
 
-int Poly_init(Poly** self){
+__host__ __device__ int Poly_init(Poly** self){
     if(NULL == (*self= (Poly*)malloc(sizeof(Poly))) ) return EXIT_FAILURE;
 
     (*self) ->coef   = NULL;
@@ -363,14 +355,14 @@ int Poly_init(Poly** self){
 
 
 
-void Poly_free(Poly* ptr){
+ __device__ __host__ void Poly_free(Poly* ptr){
     if(ptr->coef != NULL ){
         free(ptr->coef);
         ptr->coef = NULL;
         ptr->degree = 0;
     }
 }
-void Poly_print(Poly* self){
+ __device__ __host__ void Poly_print(Poly* self){
     //printf("Poly Coef:   ");
     //printf("{");
     for(int idx=0; idx <= self->degree ; ++idx){
@@ -383,7 +375,7 @@ void Poly_print(Poly* self){
     }
 }
 
-void File_export(FILE * fptr_out, Cipher* self){
+__host__ void File_export(FILE * fptr_out, Cipher* self){
     for(int idx=0; idx <= self->degree ; ++idx){
         if(idx != self->degree ){
             fprintf(fptr_out,"%d ",self ->Cipher_poly[idx]);
@@ -394,7 +386,7 @@ void File_export(FILE * fptr_out, Cipher* self){
     }
 }
 
-Poly * Poly_scalar_mult(Poly * self, int multiplier){
+ __device__ __host__ Poly * Poly_scalar_mult(Poly * self, int multiplier){
     Poly * rtn;
     Poly_init(&rtn);   
     rtn -> coef = (int*)malloc( sizeof(int)*(self->degree+1) );
@@ -405,7 +397,7 @@ Poly * Poly_scalar_mult(Poly * self, int multiplier){
     return rtn;
 }
 
-Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
+ __device__ __host__ Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
     Poly * large_ptr = (ptr_a -> degree > ptr_b -> degree ) ? ptr_a  : ptr_b ;
     Poly * small_ptr = (ptr_a -> degree > ptr_b -> degree ) ? ptr_b : ptr_a;
 
@@ -423,7 +415,7 @@ Poly * Poly_add(Poly * ptr_a, Poly *ptr_b, int field_N){
     return rtn;
 }
 
-Poly * Poly_CenterLift(Poly *ptr_a, int q){
+__device__ __host__ Poly * Poly_CenterLift(Poly *ptr_a, int q){
 
     Poly * rtn;
     Poly_init(&rtn);   
@@ -441,17 +433,17 @@ Poly * Poly_CenterLift(Poly *ptr_a, int q){
     return rtn;
 }
 
-Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
+__device__ __host__ Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
 
     int rtn_idx = 0;
-    int N = ptr_irr -> degree;
+    int size = ptr_irr -> degree;
     int tmp;
 
 
     Poly * poly_rtn;
     Poly_init(& poly_rtn);
-    poly_rtn -> coef = (int*)malloc(sizeof(int)*N);
-    poly_rtn -> degree = N-1;
+    poly_rtn -> coef = (int*)malloc(sizeof(int)*size);
+    poly_rtn -> degree = size-1;
 
 #ifdef DBG
     printf("poly rnt:"); Poly_print(poly_rtn);
@@ -462,7 +454,7 @@ Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
 
     for (int idx = 0 ; idx <= ptr_a -> degree ; ++idx){
         for(int idy = 0 ; idy <= ptr_b -> degree ; ++ idy){
-            rtn_idx = (idx + idy)%N;
+            rtn_idx = (idx + idy)%size;
 #ifdef DBG
             printf("\n(%d + %d * %d )mod N ",  poly_rtn -> coef[rtn_idx], ptr_a -> coef[idx], ptr_b->coef[idy]);
 #endif
@@ -477,7 +469,7 @@ Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
         }
     }
     // update degree
-    for (int idx = N-1 ; idx >= 0 ; idx--){
+    for (int idx = size-1 ; idx >= 0 ; idx--){
 	if(poly_rtn->coef[idx] != 0 ){
 	    poly_rtn->degree = idx;
 	    break;
@@ -485,7 +477,7 @@ Poly * Poly_mult(Poly *ptr_a, Poly *ptr_b, Poly* ptr_irr,int q){
     }
     return poly_rtn;
 }
-void Poly_set(Poly *self, int arr[], int size){
+__device__ __host__ void Poly_set(Poly *self, int arr[], int size){
     for (int idx=size-1 ; idx >=0 ; -- idx){
         if(arr[idx] != 0){
             self -> degree = idx;
@@ -589,6 +581,7 @@ int char2trit(char * infile_path, Message ** msg_arr){
             tmp_8byte /= 3;
         } 
     }
+
     fclose(infile_p);
     // Finish Encoding to Trits
     return num_block;
@@ -596,7 +589,7 @@ int char2trit(char * infile_path, Message ** msg_arr){
     
 
 
-int trit2char(Message *const decrypted_msg_arr, int num_block){
+__host__ __device__  int trit2char(Message *const decrypted_msg_arr, int num_block){
     unsigned long long int tmp_8byte_decode;
     printf("Decoding From Trits to char\n");
     for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block

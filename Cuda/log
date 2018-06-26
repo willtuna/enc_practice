@@ -1,4 +1,8 @@
-Hello 
-Jimmy
-Will
+ntru_encrypt_v4.cu(626): warning: variable "line_num" was declared but never referenced
+
+ntru_encrypt_v4.cu(627): warning: variable "garbage" was set but never used
+
+ntru_encrypt_v4.cu(626): warning: variable "line_num" was declared but never referenced
+
+ntru_encrypt_v4.cu(627): warning: variable "garbage" was set but never used
 
