@@ -64,7 +64,6 @@ int char2trit(char * infile_path, Message ** msg_arr){
     // Opeing Memory for trits
     *msg_arr = calloc(num_block,sizeof(Message));
 
-
     // Turn into trits
     for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
         tmp_8byte = block_array8b_ptr[b_idx];
@@ -75,7 +74,6 @@ int char2trit(char * infile_path, Message ** msg_arr){
             int trit = (tmp_8byte % 3);
             trit = (trit == 2)? -1 : trit;
             (*msg_arr)[b_idx].trit_poly[t_idx] = trit;
-            printf("%d ",(*msg_arr)[b_idx].trit_poly[t_idx] );//VEGA
             tmp_8byte /= 3;
         } 
     }
@@ -88,8 +86,7 @@ int char2trit(char * infile_path, Message ** msg_arr){
 
 int trit2char(Message *const decrypted_msg_arr, int num_block){
     unsigned long long int tmp_8byte_decode;
-    // Decoding From Trits to Digit
-    printf("Decoding ..........\n");
+    printf("Decoding From Trits to char\n");
     for (int b_idx = 0 ; b_idx < num_block ; ++ b_idx){ // read out block
             tmp_8byte_decode = 0;
         for(int t_idx = NUM_TRITS-1 ; t_idx >= 0  ; --t_idx ){ // encode to trits and write into trits

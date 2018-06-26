@@ -42,7 +42,7 @@ struct Poly {
 };
 
 
-int table_size = 30;
+int table_size = 500;
 int  poly_count = 0;
 int  Poly_init(Poly** pt2pt);
 
@@ -53,7 +53,7 @@ Poly * Poly_scalar_mult(Poly * self, int multiplier);
 Poly * Poly_add(Poly * self, Poly *ptr_b, int field_N);
 Poly * Poly_mult(Poly *self, Poly *ptr_b, Poly* ptr_irr,int q);
 void Poly_set(Poly *self, int [], int size); 
-void File_export(FILE * fptr_out,Poly* self);
+void File_export(FILE * fptr_out,const Poly*self);
 
 
 /* ref 
@@ -70,6 +70,7 @@ int main(int argc , char** argv){
     char * outfilepath =  argv[2];
 
     Message * arr_trit_msg = NULL;
+
     int num_block=0;
     FILE * fptr_out = NULL;
     fptr_out = fopen(outfilepath,"w");
@@ -77,6 +78,31 @@ int main(int argc , char** argv){
     if( (num_block = char2trit(infilepath, &arr_trit_msg)) == -1 ){
         printf("Error\n");
         return 1;
+    }
+
+    int ** cipherArr = malloc(sizeof(int*)*num_block);
+    int *  degArr    = malloc(sizeof(int)*num_block);
+
+    printf("\n");
+    for (int blk_idx =0 ; blk_idx < num_block ; ++blk_idx){
+        for(int t_idx = 0 ; t_idx < NUM_TRITS ; ++ t_idx){
+            printf("%d",arr_trit_msg[blk_idx].trit_poly[t_idx]);
+        }
+        printf("\n");
+    }
+    for (int blk_idx =0 ; blk_idx < num_block ; ++blk_idx){
+        for(int t_idx = 0 ; t_idx < NUM_TRITS ; ++ t_idx){
+            int tmp = arr_trit_msg[blk_idx].trit_poly[t_idx];
+            arr_trit_msg[blk_idx].trit_poly[t_idx] = (tmp == -1) ? 2 : tmp;
+        }
+    }
+    trit2char(arr_trit_msg, num_block);
+
+    for (int blk_idx =0 ; blk_idx < num_block ; ++blk_idx){
+        for(int t_idx = 0 ; t_idx < NUM_TRITS ; ++ t_idx){
+            int tmp = arr_trit_msg[blk_idx].trit_poly[t_idx];
+            arr_trit_msg[blk_idx].trit_poly[t_idx] = (tmp == 2) ? -1 : tmp;
+        }
     }
 
     poly_table = malloc(sizeof(Poly*) * table_size);
@@ -101,15 +127,13 @@ int main(int argc , char** argv){
     poly_f_inv_p    -> set (poly_f_inv_p  ,f_inv_p  ,sizeof(f_inv_p  )/sizeof(int));
     // param eyncryption
     Poly * poly_key_pub; 
-    Poly * poly_message; 
+    Poly ** poly_message_arr = malloc(sizeof(Poly*)*num_block); 
     Poly * poly_rand_sel;
 
     Poly_init(& poly_key_pub );
-    Poly_init(& poly_message );
     Poly_init(& poly_rand_sel);
 
     poly_key_pub    -> set (poly_key_pub  ,key_pub  ,sizeof(key_pub  )/sizeof(int));
-//    poly_message    -> set (poly_message  ,message  ,sizeof(message  )/sizeof(int));
     poly_rand_sel   -> set (poly_rand_sel ,rand_sel ,sizeof(rand_sel )/sizeof(int));
 
 //  Encryption intermediate ptr
@@ -119,21 +143,25 @@ int main(int argc , char** argv){
     Poly* poly_cipher  ;
 
     fprintf(fptr_out,"LINE:[%d]\n",num_block);
+
+    Poly * Poly_arr = malloc(sizeof(Poly)*num_block);
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-        printf("\n------------------- DBG coredump blk_idx: %d --------------\n",blk_idx);
-        if(poly_message -> coef != NULL){// has previous message
-             poly_message -> free(poly_message); 
-             poly_scalmul -> free(poly_scalmul); 
-             poly_mult    -> free(poly_mult   ); 
-             poly_cipher  -> free(poly_cipher ); 
-        }
-        poly_message -> set (poly_message  , arr_trit_msg[blk_idx].trit_poly, NUM_TRITS);
+        Poly_init(&(poly_message_arr[blk_idx]));
+        poly_message_arr[blk_idx] -> set (poly_message_arr[blk_idx]  , arr_trit_msg[blk_idx].trit_poly, NUM_TRITS);
         poly_scalmul = poly_rand_sel -> scalar_mult(poly_rand_sel, p) ;
         poly_mult    = poly_scalmul  -> mult(poly_scalmul, poly_key_pub, poly_irr_l, q);
-        poly_cipher  = poly_mult -> add ( poly_mult, poly_message, q);
-        File_export(fptr_out,poly_cipher);
+        poly_cipher  = poly_mult -> add ( poly_mult, poly_message_arr[blk_idx], q);
+
+        Poly_arr[blk_idx].coef = malloc(sizeof(int)*(poly_cipher->degree +1 ) );
+        for (int c_idx=0 ; c_idx <= poly_cipher -> degree ; ++ c_idx){
+            Poly_arr[blk_idx].coef[c_idx] = poly_cipher->coef[c_idx];
+        }
+        Poly_arr[blk_idx].degree = poly_cipher->degree;
     }
 
+    for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
+        File_export(fptr_out,&Poly_arr[blk_idx]);
+    }
 
     // free the polynomial
     while(poly_count){
@@ -147,21 +175,6 @@ int main(int argc , char** argv){
 }
 
 
-
-
-
-/* ref
-typedef struct {
-    int * coef;
-    int degree;
-
-    func_p free,
-           print;
-    func_p_i scalar_mult;
-    func_p_p_i add;
-    func_p_p_p_i mult;
-}Poly;
-*/
 
 
 int Poly_init(Poly** self){
@@ -219,7 +232,7 @@ void Poly_print(Poly* self){
     }
 }
 
-void File_export(FILE * fptr_out,Poly* self){
+void File_export(FILE * fptr_out,const Poly* self){
     fprintf(fptr_out,"degree[%d]: ",self ->degree);
     for(int idx=0; idx <= self->degree ; ++idx){
         if(idx != self->degree ){

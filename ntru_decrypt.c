@@ -7,18 +7,21 @@ int p = 3;
 int q =128;
 int d = 2;
 
+
 int f        []=  {-1,0,0,-1,1,0,1,0,0,1,-1,0,0,1,0,-1,1,1,0,1,0,-1,0,0,0,0,-1};
-int g        []=  {0,1,0,-1,0,0,1,0,0,-1,1,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0,-1,-1,-1,-1 };
+int g        []=  {0,1,0,-1,0,0,1,0,0,-1,1,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0,-1,-1,-1,-1};
 
 int f_inv_q  []= { 43,118,82,111,124,16,107,97,61,34,60,48,52,18,25,92,83,32,34,36,9,81,3,111,41,45,80,70,30,65,124,51,67,35,103,44,101,102,3,19,98,97,120,85,59,94,67,104,92,18,34,76,72,70,119,100,112,0,93,91,18,31,74,72,65,69,122,88,40,66,72,48,68,55,39,58,67,89,68,110,98,107,110,62,92,56,58,34,83,31,39,35,93,125,40,127,105,53,118,12,50,119,114,127,55,19,25,67,61,80,85,70,114,121,109,14,77,36,91,81,48,50,54,61,14,12,86,91,22,54,70,104,95,26,42,75,93,21,80,47,34,89,52,71,81,66,20,17,63,7,61,100,125,25,51,78,97,27,109,50,7,26,21,11,77,100,113,83,27,78,35,34,27,123,25,54,95,77,83,108,38,68,6,26,0,38,50,55,87,33,75,31,24,29,65,75,39,81,50,21,85,88,2,63,126,82,23,110,90,47,12,78,1,93,9,122,19,35,126,1,22,71,86,28,6,13,113,5,125,40,83,53,111,44,76,108,51,55,101,40,1,93,16,87,43,103,18,97,72,65,2 };
 
-
 int f_inv_p  []= { 2,2,1,2,0,1,2,0,1,1,0,1,2,1,0,2,2,1,1,0,2,0,1,0,0,0,0,2,1,1,2,1,0,0,1,0,2,1,2,0,0,2,1,0,1,0,2,1,2,0,0,0,0,2,2,2,0,2,0,1,0,0,1,0,1,1,0,0,0,1,1,0,2,1,0,1,0,1,0,0,1,2,1,1,0,0,1,1,0,2,0,1,0,2,2,0,0,2,0,0,2,2,0,0,0,2,1,0,0,2,0,2,0,1,2,0,0,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,2,2,2,0,2,0,2,0,2,1,2,0,2,0,1,2,1,2,1,0,1,0,1,1,1,1,0,1,0,2,0,0,0,2,0,1,2,2,1,0,1,2,1,1,2,0,1,0,1,1,1,0,1,1,1,2,1,1,0,1,2,2,2,0,2,1,0,1,0,0,2,1,1,2,2,2,1,0,2,0,1,1,1,1,2,1,1,1,2,0,0,0,1,2,1,0,2,2,1,1,0,1,0,0,0,0,1,0,0,2,2,2,1,2,2,1,2,2 };
 
-int key_pub  []=  {30,26, 8,38, 2,40,20};
-int rand_sel []=  {-1, 1, 0, 0, 0,-1, 1};
+
+int rand_sel []=  {0,0,-1,-1,0,1,0,0,-1,1,1,1,0,1,0,-1,-1,1,1,0,-1,0,1,0,0,0,1,0,1,-1,-1,0,0,-1,0,0,0,0,-1};
+
 int irr_l    []=  { -1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
 };
+int key_pub [] = { 0,129,354,117,-21,126,-156,303,489,66,-42,153,276,228,546,102,678,759,429,-123,444,609,1152,759,750,1098,429,294,36,-48,-879,30,-774,-375,-576,-327,33,516,156,-567,300,153,339,-81,141,-243,444,612,714,-87,-198,312,183,207,78,246,15,123,3,-129,3,3,174,-324,426,195,390,27,153,-123,-327,-744,12,18,-462,-231,462,564,150,-120,159,-288,-705,-129,-249,-84,210,321,243,270,33,-132,-90,-180,333,-417,18,36,195,300,87,69,747,591,-96,-510,-390,-360,-75,-24,-459,-447,-222,204,555,441,90,645,396,84,93,-987,-384,126,360,-174,-15,-201,147,-714,-666,-174,447,786,171,-78,-6,240,-639,-762,-366,-300,9,-165,-12,-144,-102,-531,66,306,18,315,525,342,-159,-351,147,267,6,-435,-255,-567,369,-204,-54,294,768,-477,-213,-360,-219,-186,333,300,252,174,-6,345,-279,237,84,-369,-696,45,-696,-300,237,768,345,696,39,207,-363,-522,-264,-69,-66,-78,246,-69,243,267,-9,-546,-561,-375,-546,-492,27,435,357,627,105,-93,171,213,-462,177,120,867,-438,354,156,180,-594,300,-111,123,447,309,-393,-669,318,-618,-240,-576,639,-450,195,123,450,-741,438,150,-126,90,-123,-84,255,633,-168,465,-123,618,-264,240,-390,-90,-393,93,-369,-603,-339,-348,-630,-351,-153,-342,-105,-84,-306,-546,-747,-783,-870,-756,-708,-417,-201,-6 };
+
 
 
 
@@ -41,7 +44,7 @@ struct Poly {
 };
 
 
-int table_size = 30;
+int table_size = 500;
 int  poly_count = 0;
 int  Poly_init(Poly** pt2pt);
 
@@ -55,12 +58,6 @@ void Poly_set(Poly *self, int [], int size);
 void File_export(FILE * fptr_out,Poly* self);
 
 
-/* ref 
-print("encryption ...")
-r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
-cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)
-print('cipher:',cipher)
-*/
 Poly ** poly_table = NULL;
 
 int main(int argc , char** argv){
@@ -68,7 +65,6 @@ int main(int argc , char** argv){
     char * cipherpathh  =  argv[1];
     char * plainTextPath =  argv[2];
 
-    Message * arr_trit_msg = NULL;
     int num_block=0;
     FILE * fptr_out = NULL;
     FILE * fptr_in  = NULL;
@@ -79,28 +75,19 @@ int main(int argc , char** argv){
 
     fscanf(fptr_in,"LINE:[%d]\n",&num_block);
 
-    int ** PolyArr = malloc(sizeof(int*)*num_block);
+    int ** cipherArr = malloc(sizeof(int*)*num_block);
     int * degArr = malloc(sizeof(int)*num_block);
 
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
         fscanf(fptr_in,"degree[%d]: ",&tmpdegree);
         degArr[blk_idx]  = tmpdegree;
-        PolyArr[blk_idx] = malloc(sizeof(int)*(tmpdegree+1));
+        cipherArr[blk_idx] = malloc(sizeof(int)*(tmpdegree+1));
 
         for( int coef_idx=0; coef_idx <= tmpdegree; ++coef_idx){
             fscanf(fptr_in,"%d ",& tmpcoef);
-            PolyArr[blk_idx][coef_idx]=tmpcoef;
+            cipherArr[blk_idx][coef_idx]=tmpcoef;
         }
     }
-/*
-    for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-        printf("blk_idx: %d : degree[%d]",blk_idx,degArr[blk_idx]);
-        for( int coef_idx=0; coef_idx <= degArr[blk_idx]; ++coef_idx){
-            printf("%d ",PolyArr[blk_idx][coef_idx]);
-        }
-        printf("\n");
-    }
-*/
 
     poly_table = malloc(sizeof(Poly*) * table_size);
     // param shared
@@ -125,8 +112,6 @@ int main(int argc , char** argv){
 
     printf("Decryption:\n");
 
-    Poly * poly_cipher; 
-    Poly_init(& poly_cipher);
 
     Poly* poly_fq_mult_e   ; 
     Poly* poly_centerlift_q; 
@@ -135,22 +120,18 @@ int main(int argc , char** argv){
 
     Message * decrypted_msg_arr = malloc(sizeof(Message)*num_block);
 
+    Poly ** poly_cipher_arr = malloc(sizeof(Poly*) *num_block) ; 
+
     unsigned long long int tmp_8byte_decode;
     printf("--------------- Number of Block%d ------------------\n", num_block);
     for( int blk_idx =0; blk_idx < num_block ; ++blk_idx  ){
-        if(poly_cipher-> coef != NULL){// has previous message
-             poly_cipher            -> free(poly_cipher       ); 
-             poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
-             poly_centerlift_q      -> free(poly_centerlift_q ); 
-             f_inv_p_center         -> free(f_inv_p_center    ); 
-             decrypted              -> free(decrypted         ); 
-        }
-        poly_cipher       -> set (poly_cipher, PolyArr[blk_idx] , degArr[blk_idx]+1);
-        poly_fq_mult_e    = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
+        Poly_init(& poly_cipher_arr[blk_idx]);
+        poly_cipher_arr[blk_idx]  -> set (poly_cipher_arr[blk_idx], cipherArr[blk_idx] , degArr[blk_idx]+1);
+        poly_fq_mult_e    = poly_cipher_arr[blk_idx] -> mult( poly_cipher_arr[blk_idx], poly_f , poly_irr_l, q );
         poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
         f_inv_p_center    =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
         decrypted         =  f_inv_p_center -> center_lift(f_inv_p_center, p);
-        printf("------------------- DBG coredump blk_idx: %d --------------\n",blk_idx);
+
         for (int t_idx = 0; t_idx <= (decrypted -> degree) ; ++ t_idx){
             int trit = decrypted->coef[t_idx];
             printf("%d ",trit);
@@ -162,7 +143,18 @@ int main(int argc , char** argv){
         for (int t_idx = decrypted->degree +1 ; t_idx < NUM_TRITS ; ++t_idx){
             decrypted_msg_arr[blk_idx].trit_poly[t_idx] = 0;
         }
+        if( (decrypted -> degree + 1) > NUM_TRITS){
+            printf("Decryption Error\n");
+            printf("Degree Too Large\n");
+        }
         printf("\n");
+
+//        poly_cipher            -> free(poly_cipher       ); 
+//        poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
+//        poly_centerlift_q      -> free(poly_centerlift_q ); 
+//        f_inv_p_center         -> free(f_inv_p_center    ); 
+//        decrypted              -> free(decrypted         ); 
+
     }
     trit2char(decrypted_msg_arr,num_block);
 /*
