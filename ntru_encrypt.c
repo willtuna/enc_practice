@@ -42,7 +42,7 @@ struct Poly {
 };
 
 
-int table_size = 500;
+int table_size = 1000;
 int  poly_count = 0;
 int  Poly_init(Poly** pt2pt);
 

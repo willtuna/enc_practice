@@ -94,8 +94,8 @@ int trit2char(Message *const decrypted_msg_arr, int num_block){
             tmp_8byte_decode += decrypted_msg_arr[b_idx].trit_poly[t_idx]; 
         } 
 
-        printf("b_idx: %d: ", b_idx);
-        printf("tmp_8byte : %llu  :",tmp_8byte_decode);
+//        printf("b_idx: %d: ", b_idx);
+//        printf("tmp_8byte : %llu  :",tmp_8byte_decode);
         char chr_tmp;
         for(int shf_idx =7; shf_idx >= 0 ; --shf_idx){// take out 8 bit by 8 bit
             chr_tmp =  tmp_8byte_decode >> (shf_idx*8) & 0xff; // after shifting , taking 8 bit out

@@ -44,7 +44,7 @@ struct Poly {
 };
 
 
-int table_size = 500;
+int table_size = 1000;
 int  poly_count = 0;
 int  Poly_init(Poly** pt2pt);
 
@@ -149,31 +149,9 @@ int main(int argc , char** argv){
         }
         printf("\n");
 
-//        poly_cipher            -> free(poly_cipher       ); 
-//        poly_fq_mult_e         -> free(poly_fq_mult_e    ); 
-//        poly_centerlift_q      -> free(poly_centerlift_q ); 
-//        f_inv_p_center         -> free(f_inv_p_center    ); 
-//        decrypted              -> free(decrypted         ); 
 
     }
     trit2char(decrypted_msg_arr,num_block);
-/*
-    Poly* poly_fq_mult_e = poly_cipher -> mult( poly_cipher, poly_f , poly_irr_l, q );
-    printf("Poly fq mult cipher\n");
-    poly_fq_mult_e -> print(poly_fq_mult_e);
-
-    printf("Center Lifting\n");
-    Poly* poly_centerlift_q = poly_fq_mult_e -> center_lift(poly_fq_mult_e, q);
-    poly_centerlift_q -> print(poly_centerlift_q);
-
-    printf("Poly f_inv_q mult center_lift q\n");
-    Poly* f_inv_p_center =  poly_centerlift_q  -> mult( poly_centerlift_q, poly_f_inv_p, poly_irr_l, p);
-    f_inv_p_center -> print(f_inv_p_center);
-
-    printf("Center Lifting\n");
-    Poly* decrypted =  f_inv_p_center -> center_lift(f_inv_p_center, p);
-    decrypted -> print(decrypted);
-*/
 
 
     // free the polynomial

@@ -9,15 +9,20 @@ int p = 3;
 int q =128;
 int d = 2;
 
-int g        []=  { 0,-1,-1, 0, 1, 0, 1};
-int f        []=  {-1, 0, 1, 1,-1, 0, 1};
-int f_inv_q  []=  {37, 2,40,21,31,26, 8};
-int f_inv_p  []=  { 1, 1, 1, 1, 0, 2, 1};
-int key_pub  []=  {30,26, 8,38, 2,40,20};
-int rand_sel []=  {-1, 1, 0, 0, 0,-1, 1};
-int irr_l    []=  {-1, 0, 0, 0, 0, 0, 0, 1};
+int f        []=  {-1,0,0,-1,1,0,1,0,0,1,-1,0,0,1,0,-1,1,1,0,1,0,-1,0,0,0,0,-1};
+int g        []=  {0,1,0,-1,0,0,1,0,0,-1,1,0,0,0,1,0,0,0,0,0,0,1,1,0,0,0,-1,-1,-1,-1};
 
-int message  []=  {1 ,-1, 1, 1, 0,-1   };
+int f_inv_q  []= { 43,118,82,111,124,16,107,97,61,34,60,48,52,18,25,92,83,32,34,36,9,81,3,111,41,45,80,70,30,65,124,51,67,35,103,44,101,102,3,19,98,97,120,85,59,94,67,104,92,18,34,76,72,70,119,100,112,0,93,91,18,31,74,72,65,69,122,88,40,66,72,48,68,55,39,58,67,89,68,110,98,107,110,62,92,56,58,34,83,31,39,35,93,125,40,127,105,53,118,12,50,119,114,127,55,19,25,67,61,80,85,70,114,121,109,14,77,36,91,81,48,50,54,61,14,12,86,91,22,54,70,104,95,26,42,75,93,21,80,47,34,89,52,71,81,66,20,17,63,7,61,100,125,25,51,78,97,27,109,50,7,26,21,11,77,100,113,83,27,78,35,34,27,123,25,54,95,77,83,108,38,68,6,26,0,38,50,55,87,33,75,31,24,29,65,75,39,81,50,21,85,88,2,63,126,82,23,110,90,47,12,78,1,93,9,122,19,35,126,1,22,71,86,28,6,13,113,5,125,40,83,53,111,44,76,108,51,55,101,40,1,93,16,87,43,103,18,97,72,65,2 };
+
+int f_inv_p  []= { 2,2,1,2,0,1,2,0,1,1,0,1,2,1,0,2,2,1,1,0,2,0,1,0,0,0,0,2,1,1,2,1,0,0,1,0,2,1,2,0,0,2,1,0,1,0,2,1,2,0,0,0,0,2,2,2,0,2,0,1,0,0,1,0,1,1,0,0,0,1,1,0,2,1,0,1,0,1,0,0,1,2,1,1,0,0,1,1,0,2,0,1,0,2,2,0,0,2,0,0,2,2,0,0,0,2,1,0,0,2,0,2,0,1,2,0,0,1,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,2,2,2,0,2,0,2,0,2,1,2,0,2,0,1,2,1,2,1,0,1,0,1,1,1,1,0,1,0,2,0,0,0,2,0,1,2,2,1,0,1,2,1,1,2,0,1,0,1,1,1,0,1,1,1,2,1,1,0,1,2,2,2,0,2,1,0,1,0,0,2,1,1,2,2,2,1,0,2,0,1,1,1,1,2,1,1,1,2,0,0,0,1,2,1,0,2,2,1,1,0,1,0,0,0,0,1,0,0,2,2,2,1,2,2,1,2,2 };
+
+
+int rand_sel []=  {0,0,-1,-1,0,1,0,0,-1,1,1,1,0,1,0,-1,-1,1,1,0,-1,0,1,0,0,0,1,0,1,-1,-1,0,0,-1,0,0,0,0,-1};
+
+int irr_l    []=  { -1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+};
+int key_pub [] = { 0,129,354,117,-21,126,-156,303,489,66,-42,153,276,228,546,102,678,759,429,-123,444,609,1152,759,750,1098,429,294,36,-48,-879,30,-774,-375,-576,-327,33,516,156,-567,300,153,339,-81,141,-243,444,612,714,-87,-198,312,183,207,78,246,15,123,3,-129,3,3,174,-324,426,195,390,27,153,-123,-327,-744,12,18,-462,-231,462,564,150,-120,159,-288,-705,-129,-249,-84,210,321,243,270,33,-132,-90,-180,333,-417,18,36,195,300,87,69,747,591,-96,-510,-390,-360,-75,-24,-459,-447,-222,204,555,441,90,645,396,84,93,-987,-384,126,360,-174,-15,-201,147,-714,-666,-174,447,786,171,-78,-6,240,-639,-762,-366,-300,9,-165,-12,-144,-102,-531,66,306,18,315,525,342,-159,-351,147,267,6,-435,-255,-567,369,-204,-54,294,768,-477,-213,-360,-219,-186,333,300,252,174,-6,345,-279,237,84,-369,-696,45,-696,-300,237,768,345,696,39,207,-363,-522,-264,-69,-66,-78,246,-69,243,267,-9,-546,-561,-375,-546,-492,27,435,357,627,105,-93,171,213,-462,177,120,867,-438,354,156,180,-594,300,-111,123,447,309,-393,-669,318,-618,-240,-576,639,-450,195,123,450,-741,438,150,-126,90,-123,-84,255,633,-168,465,-123,618,-264,240,-390,-90,-393,93,-369,-603,-339,-348,-630,-351,-153,-342,-105,-84,-306,-546,-747,-783,-870,-756,-708,-417,-201,-6 };
+
 
 typedef struct Poly Poly;// forward declaration
 
@@ -26,6 +31,11 @@ typedef void  (*func_p_arr_i)(Poly *,int [], int);
 typedef Poly* (*func_p_i)(Poly*, int);
 typedef Poly* (*func_p_p_i)(Poly *, Poly *, int);
 typedef Poly* (*func_p_p_p_i)(Poly *, Poly *, Poly *,int);
+
+typedef struct Cipher {
+    int Cipher_poly[251] ;//should be initialized
+    int degree;
+} Cipher;
 
 struct Poly {
     int * coef;
@@ -38,7 +48,7 @@ struct Poly {
 };
 
 
-int table_size = 30;
+int table_size = 1000;
 int  poly_count = 0;
 int  Poly_init(Poly** pt2pt);
 
@@ -58,9 +68,8 @@ r_ccov_h = p*P(rand_sel)*P(key_pub)+P(message)
 cipher  = poly_ring_mult_over_q_with_irr(poly1_l=r_ccov_h.coef,poly2_l=[1],irr_l=irr_l,q=q)
 print('cipher:',cipher)
 */
-Poly ** poly_table = NULL;
 
-__global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cipher_arr, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel, int NUM_TRITS, int p, int q){
+__global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cipher_arr, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel){
 	//int blk_idx = blockIdx.x*blockDim.x+threadIdx.x;
 	int blk_idx=0;
 	int TotalThread = blockDim.x*gridDim.x;
@@ -97,7 +106,7 @@ __global__ void encrypt(Message * arr_trit_msg, int num_block, Cipher * poly_cip
 	}
 }
 
-float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel, int NUM_TRITS, int p, int q){
+float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Poly * poly_irr_l, Poly * poly_key_pub, Poly * poly_rand_sel){
 	
 	Message * darr_trit_msg;
 	Poly * dpoly_irr_l, * dpoly_key_pub, * dpoly_rand_sel;
@@ -112,11 +121,11 @@ float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Po
 	// Allocate Memory Space on Device******************
 	cudaMalloc((void**)&darr_trit_msg      ,sizeof(Message)*num_block);
 	cudaMalloc((void**)&dpoly_irr_l        ,sizeof(Poly)*1);
-	cudaMalloc((void**)&dpoly_irr_l_coef   ,sizeof(int)*(poly_irr_l->degree));
+	cudaMalloc((void**)&dpoly_irr_l_coef   ,sizeof(int)*(poly_irr_l->degree+1));
 	cudaMalloc((void**)&dpoly_key_pub      ,sizeof(Poly)*1);
-	cudaMalloc((void**)&dpoly_key_pub_coef ,sizeof(int)*(poly_key_pub->degree));
+	cudaMalloc((void**)&dpoly_key_pub_coef ,sizeof(int)*(poly_key_pub->degree+1));
 	cudaMalloc((void**)&dpoly_rand_sel     ,sizeof(Poly)*1);
-	cudaMalloc((void**)&dpoly_rand_sel_coef,sizeof(int)*(poly_rand_sel->degree));
+	cudaMalloc((void**)&dpoly_rand_sel_coef,sizeof(int)*(poly_rand_sel->degree+1));
 	cudaCalloc((void**)&dpoly_cipher       ,sizeof(Cipher)*num_block);//initialize
 	// Allocate Memory Space on Device (for observation)
 	//cudaMalloc((void**)&dInd,sizeof(IndexSave)*SIZE);
@@ -126,9 +135,9 @@ float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Po
 	cudaMemcpy(dpoly_irr_l     , poly_irr_l     , sizeof(Poly)*1           , cudaMemcpyHostToDevice);
 	cudaMemcpy(dpoly_key_pub   , poly_key_pub   , sizeof(Poly)*1           , cudaMemcpyHostToDevice);
 	cudaMemcpy(dpoly_rand_sel  , poly_rand_sel  , sizeof(Poly)*1           , cudaMemcpyHostToDevice);
-	cudaMemcpy(dpoly_irr_l_coef    , poly_irr_l->coef   , sizeof(int)*(poly_irr_l->degree)   , cudaMemcpyHostToDevice);
-	cudaMemcpy(dpoly_key_pub_coef  , poly_key_pub->coef , sizeof(int)*(poly_key_pub->degree) , cudaMemcpyHostToDevice);
-	cudaMemcpy(dpoly_rand_sel_coef , poly_rand_sel->coef, sizeof(int)*(poly_rand_sel->degree), cudaMemcpyHostToDevice);
+	cudaMemcpy(dpoly_irr_l_coef    , poly_irr_l->coef   , sizeof(int)*(poly_irr_l->degree+1)   , cudaMemcpyHostToDevice);
+	cudaMemcpy(dpoly_key_pub_coef  , poly_key_pub->coef , sizeof(int)*(poly_key_pub->degree+1) , cudaMemcpyHostToDevice);
+	cudaMemcpy(dpoly_rand_sel_coef , poly_rand_sel->coef, sizeof(int)*(poly_rand_sel->degree+1), cudaMemcpyHostToDevice);
 	dpoly_irr_l   ->coef = dpoly_irr_l_coef;
 	dpoly_key_pub ->coef = dpoly_key_pub_coef;
 	dpoly_rand_sel->coef = dpoly_rand_sel_coef;
@@ -143,7 +152,7 @@ float GPU_kernel(Message * arr_trit_msg, int num_block, Cipher * poly_cipher, Po
 	// Lunch Kernel
 	dim3 dimGrid (2);
 	dim3 dimBlock(4);
-	encrypt<<<dimGrid,dimBlock>>>(darr_trit_msg, num_block, dpoly_cipher, dpoly_irr_l, dpoly_key_pub, dpoly_rand_sel, NUM_TRITS, p, q);
+	encrypt<<<dimGrid,dimBlock>>>(darr_trit_msg, num_block, dpoly_cipher, dpoly_irr_l, dpoly_key_pub, dpoly_rand_sel);
 
 	// Stop Timer
 	cudaEventRecord(stop, 0);
@@ -184,7 +193,6 @@ int main(int argc , char** argv){
         return 1;
     }
 
-    poly_table = malloc(sizeof(Poly*) * table_size);
     // param shared
     Poly * poly_irr_l  ; 
     Poly_init(& poly_irr_l   );
@@ -218,13 +226,11 @@ int main(int argc , char** argv){
     poly_rand_sel   -> set (poly_rand_sel ,rand_sel ,sizeof(rand_sel )/sizeof(int));
 
 	/* CPU side*/
-	function_1(C,A);//to modified
 	
-	Cipher * arr_cipher_cpu;
-	Malloc((void**)&arr_cipher_cpu,sizeof(Cipher)*num_block);
+	Cipher * arr_cipher_cpu = malloc(sizeof(Cipher)*num_block);
 	
 	/* GPU side*/
-	float elapsedTime = GPU_kernel(arr_trit_msg, num_block, arr_cipher_cpu, poly_irr_l, poly_key_pub, poly_rand_sel, NUM_TRITS, p, q);
+	float elapsedTime = GPU_kernel(arr_trit_msg, num_block, arr_cipher_cpu, poly_irr_l, poly_key_pub, poly_rand_sel);
 	
 	printf("GPU time = %5.2f ms\n", elapsedTime);
 	
@@ -282,11 +288,14 @@ int main(int argc , char** argv){
 
 
     // free the polynomial
-    while(poly_count){
-        int idx = --poly_count;
-	poly_table[idx] -> free(poly_table[idx]);
-        poly_table[idx] = NULL;
-    }
+    poly_irr_l    -> free(poly_irr_l    ); 
+    poly_g        -> free(poly_g        );
+    poly_f        -> free(poly_f        ); 
+    poly_f_inv_q  -> free(poly_f_inv_q  ); 
+    poly_f_inv_p  -> free(poly_f_inv_p  ); 
+    poly_key_pub  -> free(poly_key_pub  ); 
+    poly_rand_sel -> free(poly_rand_sel );
+
     fclose(fptr_out);
 
     return 0;
@@ -311,22 +320,6 @@ typedef struct {
 
 int Poly_init(Poly** self){
     if(NULL == (*self= malloc(sizeof(Poly))) ) return EXIT_FAILURE;
-
-    poly_table[poly_count] = (*self);
-    poly_count++;
-    if(poly_count == table_size){
-	    printf("Table is full\n");
-        Poly ** new_table = NULL;
-        new_table = malloc(sizeof(Poly*) * table_size*2);
-        table_size*=2;
-        for(int idx=0; idx < poly_count ; ++idx){
-            new_table[idx] = poly_table[idx];
-        }
-        free(poly_table);
-        poly_table = NULL;
-        poly_table = new_table;
-    }
-    
 
     (*self) ->coef   = NULL;
     (*self) ->degree = 0;
@@ -485,7 +478,4 @@ void Cipher_set(int * arr, Poly *self){
     }
 } 
 
-typedef struct Cipher {
-    int Cipher_poly[251] = {0} ;
-    int degree;
-} Cipher;
+
